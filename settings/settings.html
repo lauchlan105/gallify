@@ -1,0 +1,220 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html id="sfc-settings-html">
+
+<body>
+	<link rel="stylesheet" type="text/css" href="./settings.css">
+
+	<div id="sfc-navbar">
+		<button id="sfc-navButton-general" for="sfc-tab-general">General</button>
+		<button id="sfc-navButton-webms" for="sfc-tab-webms">Webms</button>
+		<button id="sfc-navButton-pictures" for="sfc-tab-pictures">Pictures</button>
+		<button id="sfc-navButton-gifs" for="sfc-tab-gifs">Gifs</button>
+	</div>
+
+	<div id="sfc-tabWindow">
+
+		<div id="sfc-tab-general" class="tabPage">
+
+			<div class="option-group">
+
+				<div class="option">
+					<p>Play Webms</p>
+					<span>
+						<input type="checkbox" />
+					</span>
+				</div>
+
+				<div class="sub-options">
+
+					<div for="true" class="option-group">
+
+						<div class="option">
+							<p>when true 1</p>
+							<span>
+								<input type="checkbox" />
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+					<div for="true" class="option-group">
+
+						<div class="option">
+							<p>when true 2</p>
+							<span>
+								<input type="checkbox" />
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+					<div for="false" class="option-group">
+
+						<div class="option">
+							<p>when false</p>
+							<span>
+								<select>
+									<option value="0">this is one option</option>
+									<option value="1">this is another option</option>
+									<option value="2">This option is the longest of them all!</option>
+								</select>
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+		<div id="sfc-tab-webms" class="tabPage">
+			<div class="option-group">
+
+				<div class="option">
+					<p>Play Webms</p>
+					<span>
+						<input type="checkbox" />
+					</span>
+				</div>
+
+				<div class="sub-options">
+
+					<div for="true" class="option-group">
+
+						<div class="option">
+							<p>when true 1</p>
+							<span>
+								<input type="checkbox" />
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+					<div for="true" class="option-group">
+
+						<div class="option">
+							<p>when true 2</p>
+							<span>
+								<input type="checkbox" />
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+					<div for="false" class="option-group">
+
+						<div class="option">
+							<p>when false</p>
+							<span>
+								<select>
+									<option value="0">this is one option</option>
+									<option value="1">this is another option</option>
+									<option value="2">This option is the longest of them all!</option>
+								</select>
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		<div id="sfc-tab-pictures" class="tabPage">
+			<div class="option-group">
+
+				<div class="option">
+					<p>Play Webms</p>
+					<span>
+						<input type="checkbox" />
+					</span>
+				</div>
+
+				<div class="sub-options">
+
+					<div for="true" class="option-group">
+
+						<div class="option">
+							<p>when true 1</p>
+							<span>
+								<input type="checkbox" />
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+					<div for="true" class="option-group">
+
+						<div class="option">
+							<p>when true 2</p>
+							<span>
+								<input type="checkbox" />
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+					<div for="false" class="option-group">
+
+						<div class="option">
+							<p>when false</p>
+							<span>
+								<select>
+									<option value="0">this is one option</option>
+									<option value="1">this is another option</option>
+									<option value="2">This option is the longest of them all!</option>
+								</select>
+							</span>
+						</div>
+
+						<div class="sub-options">
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		<div id="sfc-tab-gifs" class="tabPage">
+		</div>
+
+	</div>
+
+	<script src="./settings.js"></script>
+</body>
+
+</html>

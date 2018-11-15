@@ -1,0 +1,179 @@
+* {
+    padding: 0px;
+    margin: 0px;
+}
+
+html {
+    /* width: 417px; */
+    /* min-width: 417px; */
+}
+
+p, label {
+    font-family: 'Asap', sans-serif;
+    font-size: 1.4em;
+}
+
+
+#sfc-navbar {
+    display: flex;
+    background-color: red;
+}
+
+#sfc-navbar button {
+    background-color: inherit;
+    border-radius: 99999px;
+    margin: 5px;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 5px 16px;
+    transition: 0.3s;
+    transition: padding 0.05s ease-in-out, margin 0.05s ease-in-out;
+    font-size: 12px;
+
+    transition: 0.3s;
+    transition: padding 0.05s ease-in-out, margin 0.05s ease-in-out;
+}
+
+#sfc-navbar button.selected {
+    background-color: rgb(221, 221, 221);
+}
+
+#sfc-navbar button:hover{
+    background-color: rgb(187, 187, 187);
+}
+
+#sfc-navbar button:active {
+    padding: 8px 19px;
+    margin: 2px;
+}
+
+/*
+    Tab Panes
+*/
+
+#sfc-tabWindow {
+    width: 100%;
+    display: flex;
+    overflow: visible;
+    transition: transform 0.3s ease-in-out;
+}
+
+.tabPage {
+    flex: 0 0 auto;
+    width: inherit;
+}
+
+.tabPage .option-group {
+    display: block;
+    flex: 1 0 auto;
+}
+
+.sub-options > .option-group {
+    
+}
+
+.option-group .option {
+    display: flex;
+    padding: 5px 2.5px;
+    justify-content: space-between;
+}
+
+.option-group .option p {
+}
+
+.option-group .option span {
+}
+
+.option-group .option span * {
+    display: inline-block;
+}
+
+/*
+    INPUTS
+*/
+
+/* Base styling for all */
+input, select{
+    width: 80px;
+    height: inherit;
+    display: inline-block;
+    margin: auto 0px;
+    border: 1px rgba(221,221,221, 1) solid;
+    background-color: transparent;
+    box-sizing: border-box;
+}
+
+
+/* Select styling */ 
+select {
+    width: auto;
+    flex: 0 1 auto;
+}
+
+/* Color styling */
+input[type=color] {
+    margin: 0px;
+}
+
+input[type=radio] {
+    width: auto;
+}
+
+/* Number styling */
+input[type=number] {
+    width: 35px;
+    margin: 0px;
+}
+
+input[type=radio]::before {
+    content: "";
+    padding: 65%;
+    background-color: rgba(221, 221, 221, 1);
+    border-radius: 50%;
+    display: block;
+    margin-left: -20.5%;
+    margin-top: -15%; 
+    background-size: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+input[type=radio]:checked::before {
+    background-image: url("./circle.png");
+}
+
+/*Checkbox*/
+input[type=checkbox]{
+    margin-right: 1px;
+    width: auto;
+    height: auto;
+}
+
+input[type=checkbox]::before {
+    content: "";
+    padding: 65%;
+    background-color: rgba(221, 221, 221, 1);
+    border-radius: 50%;
+    display: block;
+    margin-left: -20.5%;
+    margin-top: -15%; 
+    background-size: 140%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+input[type=checkbox]:checked::before {
+    background-image: url("./tick.png");
+}
+
+/*
+    FONT
+*/
+
+@font-face {
+    font-family: 'Asap';
+    src: url('./../interface/Asap-Regular.ttf'); /* IE9 Compat Modes */
+  }    return target;
+  

@@ -1,3 +1,7 @@
+getFile("/interface/interface.html").then(function (response) {
+    main(response);
+});
+
 function App() {
 
     let obj = this;
@@ -41,6 +45,11 @@ function App() {
         },
     };
 
+    /*
+     * Creates the main app container in the page,
+     * creates and loads elements and sets up
+     * even listeners
+     */
     this.initialize = function (html) {
 
         /*
@@ -49,7 +58,7 @@ function App() {
 
         //Create container element
         let app = document.createElement("div");
-        app.innerHTML = replaceLocalURLS(html);;
+        app.innerHTML = replaceLocalURLS(html);
         app.id = "sfc-app-container";
         document.body.appendChild(app);
 
@@ -97,6 +106,11 @@ function App() {
         this.applySettings();
     };
 
+    /*
+     * fetchMedia runs the getMedia function that
+     * is found in the relevant js file under the
+     * 'data collection' directory.
+     */
     this.fetchMedia = function () {
 
         let fetchedMedia = getMedia();
@@ -135,6 +149,10 @@ function App() {
         return true;
     };
 
+    /*
+     * applySettings gets various settings from this.settings and
+     * applies them to the relevant items
+     */
     this.applySettings = function (singleSettings) {
 
         //Switch used for onChange triggers in settings pane
@@ -163,7 +181,7 @@ function App() {
         elems = document.getElementsByClassName("sfc-button");
         for (var i = 0; i < elems.length; i++) {
             elems[i].style.padding = buttonSize / 2 + "px";
-            elems[i].style.margin = "auto " + (standardGap) + "px";
+            elems[i].style.margin = "auto " + standardGap + "px";
         }
 
         //Gallery related items
@@ -176,6 +194,9 @@ function App() {
         components.counterIndex.style.fontSize = settings.ui.counter.fontSize() + "px";
     };
 
+    /*
+     * toggleApp shows/hides the app
+     */
     this.toggleApp = function (show) {
         let app = obj.components.app;
         if (show === true) {
@@ -187,6 +208,9 @@ function App() {
         }
     }
 
+    /*
+     * toggleGallery shows/hides the gallery
+     */
     this.toggleGallery = function (show) {
         let gallery = obj.components.gallery;
         if (show === true) { //Show gallery
@@ -198,6 +222,9 @@ function App() {
         }
     }
 
+    /*
+     * play shows and plays the parsed media
+     */
     this.play = function (media) {
 
         var stage = this.components.stage;
@@ -217,10 +244,18 @@ function App() {
             this.currentlyPlaying.select();
             stage.appendChild(media.content);
         }else{
-            console.log("wasn't media");
+            console.log("Invalid media:");
+            console.log(media);
+            console.log("");
         }
     }
 
+    /*
+     * next deselects the current media and plays the
+     * media next in line. 'next' being determined on
+     * the state of the player. ie. if randomise is on,
+     * next could be anything.
+     */
     this.next = function () {
 
         //Base next() on whether media is currently playing
@@ -242,13 +277,16 @@ function App() {
     return this;
 }
 
+/**
+ */
 function media(app, content, thumbnail) {
 
     this.playCount = 0;
     this.index = app.media.length;
 
     /*
-     * Get and assign type. Assign "" if invalid
+     * Get and assign type (ie. gif, webm, mp4, etc.). 
+     * Assign "" if invalid
      */
     var regX = /\.{1}(jpg|png|webm|gif|gifv|mp4)/gi;
     var matches = content.match(regX);
@@ -285,6 +323,7 @@ function media(app, content, thumbnail) {
 
         default:
             console.log("Content type was not caught");
+            console.log(" when creating the element");
             console.log(type);
             break;
     }
@@ -328,11 +367,15 @@ function media(app, content, thumbnail) {
     return this;
 }
 
-
-getFile("/interface/interface.html").then(function (response) {
-    main(response);
-});
 sfc = undefined;
+
+/**
+ * main runs all the necessary functions in
+ * the necessary order.
+ * 
+ * @param {HTML} html
+ * 
+ */
 function main(html) {
     sfc = new App();
     sfc.initialize(html);
@@ -340,6 +383,12 @@ function main(html) {
     sfc.applySettings();
 }
 
+/**
+ * initElements finds the gallify elements in the
+ * html using document.getElementsById and returns
+ * an object from which all HTML objects can be
+ * accessed
+ */
 function initElements() {
 
     var objects = {};
@@ -376,13 +425,20 @@ function initElements() {
     objects.counterTotal = find("sfc-counter-total");
 
     //Print all errors
-    for (let i in errors) { console.error(errors[i]); }
+    for (let i in errors) { 
+        console.error(errors[i]);
+    }
 
-    //Return false if errors
+    //Return false if no errors
     return errors.length == 0 ? objects : false;
 
 }
 
+/**
+ * getFile calls the 'getFile' function in the background.js
+ * as a file request cannot be performed in this scope by the
+ * nature of a chrome extension
+ */
 function getFile(relativePath) {
     return new Promise((resolve, reject) => {
         //Params are message, sender, callback
@@ -398,16 +454,20 @@ function getFile(relativePath) {
     });
 }
 
+/**
+ * replaceLocalURLS gets relative resources paths
+ * and prepends the chrome extension path to any resource
+ */
 function replaceLocalURLS(HTML) {
 
     let baseURL = chrome.extension.getURL("/interface/");
     let regX = /((href)|(src))="(?!(http|chrome))/;
-
+    
     while (HTML.match(regX)) {
         HTML = HTML.replace(
             regX,
-            function (x) {
-                return x + baseURL;
+            function (prefix) {
+                return prefix + baseURL;
             }
         );
     }

@@ -58,7 +58,7 @@
 .sfc-button:hover { opacity: 1; }
 
 .sfc-button-arrow {
-    background-image: url("./arrow.png");
+    background-image: url("./images/arrow.png");
     background-size: 70%;
     background-position-x: 57%; /*Compensation for apparent off-centered-ness*/
 }
@@ -66,7 +66,7 @@
 #sfc-button-right { transform: rotate(360deg); } /*required because css is stupid*/
 
 #sfc-button-gallery {
-    background-image: url("./grid.png");
+    background-image: url("./images/grid.png");
     background-size: 50%;
     
     position: fixed;
@@ -161,7 +161,7 @@
 
 @font-face {
     font-family: 'Asap';
-    src: url('./Asap-Regular.ttf'); /* IE9 Compat Modes */
+    src: url('./fonts/Asap-Regular.ttf'); /* IE9 Compat Modes */
   }
 
   /*

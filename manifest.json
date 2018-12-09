@@ -23,7 +23,7 @@
     ],
     "background": {
         "scripts": [
-            "background.js"
+            "js/background.js"
         ]
     },
     "web_accessible_resources": [

@@ -4,8 +4,8 @@
     "description": "Stream forum content in an intuitive way!",
     "version": "0.1",
     "browser_action": {
-        "default_icon": "./settings/icon.jpg",
-        "default_popup": "./settings/settings.html"
+        "default_icon": "resources/images/favicon.jpg",
+        "default_popup": "settings.html"
     },
     "permissions": [
         "activeTab",
@@ -15,14 +15,15 @@
         {
             "matches": ["*://boards.4chan.org/*/thread/*"],
             "js": [
-                "data collection/4chan.js",
-                "interface/interface.js"
+                "js/data collection/4chan.js",
+                "js/interface/classes.js",
+                "js/interface/index.js"
             ]
         }
     ],
     "background": {
         "scripts": [
-            "background.js"
+            "js/background.js"
         ]
     },
     "web_accessible_resources": [

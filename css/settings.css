@@ -8,7 +8,8 @@ html {
     /* min-width: 417px; */
 }
 
-p, label {
+p,
+label {
     font-family: 'Asap', sans-serif;
     font-size: 1.4em;
 }
@@ -40,7 +41,7 @@ p, label {
     background-color: rgb(221, 221, 221);
 }
 
-#sfc-navbar button:hover{
+#sfc-navbar button:hover {
     background-color: rgb(187, 187, 187);
 }
 
@@ -70,9 +71,7 @@ p, label {
     flex: 1 0 auto;
 }
 
-.sub-options > .option-group {
-    
-}
+.sub-options>.option-group {}
 
 .option-group .option {
     display: flex;
@@ -80,11 +79,9 @@ p, label {
     justify-content: space-between;
 }
 
-.option-group .option p {
-}
+.option-group .option p {}
 
-.option-group .option span {
-}
+.option-group .option span {}
 
 .option-group .option span * {
     display: inline-block;
@@ -95,18 +92,19 @@ p, label {
 */
 
 /* Base styling for all */
-input, select{
+input,
+select {
     width: 80px;
     height: inherit;
     display: inline-block;
     margin: auto 0px;
-    border: 1px rgba(221,221,221, 1) solid;
+    border: 1px rgba(221, 221, 221, 1) solid;
     background-color: transparent;
     box-sizing: border-box;
 }
 
 
-/* Select styling */ 
+/* Select styling */
 select {
     width: auto;
     flex: 0 1 auto;
@@ -134,7 +132,7 @@ input[type=radio]::before {
     border-radius: 50%;
     display: block;
     margin-left: -20.5%;
-    margin-top: -15%; 
+    margin-top: -15%;
     background-size: 50%;
     background-position: center;
     background-repeat: no-repeat;
@@ -145,7 +143,7 @@ input[type=radio]:checked::before {
 }
 
 /*Checkbox*/
-input[type=checkbox]{
+input[type=checkbox] {
     margin-right: 1px;
     width: auto;
     height: auto;
@@ -158,7 +156,7 @@ input[type=checkbox]::before {
     border-radius: 50%;
     display: block;
     margin-left: -20.5%;
-    margin-top: -15%; 
+    margin-top: -15%;
     background-size: 140%;
     background-position: center;
     background-repeat: no-repeat;
@@ -174,6 +172,6 @@ input[type=checkbox]:checked::before {
 
 @font-face {
     font-family: 'Asap';
-    src: url('./../interface/Asap-Regular.ttf'); /* IE9 Compat Modes */
-  }    return target;
-  
+    src: url('./../interface/Asap-Regular.ttf');
+    /* IE9 Compat Modes */
+}

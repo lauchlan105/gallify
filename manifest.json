@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Stream For Chan",
-    "description": "Stream forum content in an intuitive way!",
+    "description": "Stream forum content the smart way!",
     "version": "0.1",
     "browser_action": {
         "default_icon": "resources/images/favicon.jpg",
@@ -13,11 +13,14 @@
     ],
     "content_scripts": [
         {
-            "matches": ["*://boards.4chan.org/*/thread/*"],
+            "matches": [
+                "*://boards.4chan.org/*/thread/*",
+                "*://boards.4channel.org/*/thread/*"
+            ],
             "js": [
                 "js/data collection/4chan.js",
-                "js/interface/classes.js",
-                "js/interface/index.js"
+                "js/interface.js",
+                "js/classes.js"
             ]
         }
     ],

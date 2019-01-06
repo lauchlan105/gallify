@@ -1,4 +1,4 @@
-getFile("/interface/interface.html").then(function (response) {
+getFile("/interface.html").then(function (response) {
     main(response);
 });
 

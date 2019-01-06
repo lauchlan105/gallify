@@ -22,6 +22,3 @@ function getMedia(){
     
     return allMedia;
 }
-
-function test(){
-}

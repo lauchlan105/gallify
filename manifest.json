@@ -1,10 +1,9 @@
 {
     "manifest_version": 2,
-    "name": "Stream For Chan",
+    "name": "Gallify",
     "description": "Stream forum content the smart way!",
     "version": "0.1",
     "browser_action": {
-        "default_icon": "resources/images/favicon.jpg",
         "default_popup": "settings.html"
     },
     "permissions": [
@@ -30,6 +29,7 @@
         ]
     },
     "web_accessible_resources": [
-        "/interface/*"
+        "css/*",
+        "resources/*"
     ]
 }

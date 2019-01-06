@@ -132,7 +132,7 @@ function getFile(relativePath) {
  */
 function replaceLocalURLS(HTML) {
 
-    let baseURL = chrome.extension.getURL("/interface/");
+    let baseURL = chrome.extension.getURL("/");
     let regX = /((href)|(src))="(?!(http|chrome))/;
     
     while (HTML.match(regX)) {

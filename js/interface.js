@@ -2,96 +2,6 @@ getFile("/interface.html").then(function (response) {
     main(response);
 });
 
-/**
- */
-function media(app, content, thumbnail) {
-
-    this.playCount = 0;
-    this.index = app.media.length;
-
-    /*
-     * Get and assign type (ie. gif, webm, mp4, etc.). 
-     * Assign "" if invalid
-     */
-    var regX = /\.{1}(jpg|png|webm|gif|gifv|mp4)/gi;
-    var matches = content.match(regX);
-
-    if (matches.length !== 1) {
-        console.error("Invalid media type: " + content);
-        console.error(matches);
-        this.type = "";
-    } else {
-        this.type = matches[0];
-    }
-
-    /*
-     * Create and assign content
-     */
-    var element = undefined;
-
-    //Create content's DOM element
-    switch (this.type) {
-        case ".jpg":
-        case ".png":
-        case ".gif":
-            element = document.createElement("img");
-            break;
-
-        case ".webm":
-        case ".mp4":
-        case ".gifv":
-            element = document.createElement("video");
-            element.style.height = "inherit";
-            element.preload = "auto";
-            element.controls = app.settings.webm.controls;
-            break;
-
-        default:
-            console.log("Content type was not caught");
-            console.log(" when creating the element");
-            console.log(type);
-            break;
-    }
-
-    element.id = "sfc-now-playing";
-    element.src = content;
-
-    this.content = element;
-
-    /*
-     * Create thumbnail element and assign onclick
-     */
-
-    //Create thumbnail
-    let image = document.createElement("img");
-    image.src = thumbnail;
-    image.className = "sfc-thumbnail";
-
-    //Create surrounding table cell
-    var tableData = document.createElement("td");
-    tableData.appendChild(image);
-
-    var obj = this;
-
-    tableData.onclick = function (event) {
-        app.play(obj);
-    }
-
-    this.thumbnail = tableData;
-
-    this.select = function () {
-        this.thumbnail.children[0].style.border = "2px solid white";
-        this.thumbnail.children[0].style.opacity = "1";
-    };
-
-    this.deselect = function () {
-        this.thumbnail.children[0].style.border = "2px solid transparent";
-        this.thumbnail.children[0].style.opacity = app.settings.ui.gallery.thumbnailOpacity();
-    };
-
-    return this;
-}
-
 sfc = undefined;
 
 /**
@@ -103,13 +13,14 @@ sfc = undefined;
  */
 function main(html) {
     sfc = new App(html);
+    sfc.fetchMedia();
     sfc.applySettings();
 }
 
 /**
  * getFile calls the 'getFile' function in the background.js
  * as a file request cannot be performed in this scope by the
- * nature of a chrome extension
+ * nature of a chrome extension. Used primarily to fetch HTML code.
  */
 function getFile(relativePath) {
     return new Promise((resolve, reject) => {
@@ -146,3 +57,31 @@ function replaceLocalURLS(HTML) {
 
     return HTML;
 }
+
+// Helper function to get an element's exact position
+// Code retreived from https://www.kirupa.com/html5/get_element_position_using_javascript.htm
+function getPosition(el) {
+    var xPos = 0;
+    var yPos = 0;
+   
+    while (el) {
+      if (el.tagName == "BODY") {
+        // deal with browser quirks with body/window/document and page scroll
+        var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
+        var yScroll = el.scrollTop || document.documentElement.scrollTop;
+   
+        xPos += (el.offsetLeft - xScroll + el.clientLeft);
+        yPos += (el.offsetTop - yScroll + el.clientTop);
+      } else {
+        // for all other non-BODY elements
+        xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+        yPos += (el.offsetTop - el.scrollTop + el.clientTop);
+      }
+   
+      el = el.offsetParent;
+    }
+    return {
+      x: xPos,
+      y: yPos
+    };
+  }

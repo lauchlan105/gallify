@@ -1,65 +1,12 @@
 class App {
 
-    constructor(html) {
+    constructor(html, json) {
 
         let obj = this;
         this.components = {};
         this.media = [];
         this.currentlyPlaying = undefined;
-        this.settings = {
-            ui: {
-                size: 100,
-
-                gallery: {
-                    thumbnailHeight: function () {
-                        return obj.settings.ui.size;
-                    },
-                    thumbnailSpacing: function () {
-                        return obj.settings.ui.size * 0.02;
-                    }, //2%
-                    thumbnailBorder : function () {
-                        return obj.settings.ui.size * 0.02;
-                    }, //2%
-                    thumbnailOpacity: function () {
-                        return 0.3;
-                    },
-                    showingHeight: function () {
-                        return obj.settings.ui.gallery.thumbnailHeight() +
-                            (obj.settings.ui.gallery.thumbnailSpacing() * 2) +
-                            (obj.settings.ui.gallery.thumbnailBorder() * 2);
-                    },
-                    hidingHeight: function () {
-                        return 0;
-                    }
-                },
-
-                buttons: {
-                    height: function () {
-                        return obj.settings.ui.size * 0.6;
-                    }, //60%
-                    margin: function () {
-                        return (obj.settings.ui.gallery.showingHeight() - obj.settings.ui.buttons.height()) / 2;
-                    }
-                },
-
-                counter: {
-                    fontSize: function () {
-                        return obj.settings.ui.size * 0.25;
-                    } //25%
-                }
-            },
-            app: {
-                loopAtEnd: true,
-                autoNext: true,
-                autoPlay: true
-            },
-            webm: {
-                controls: true
-            },
-            picture: {
-
-            },
-        };
+        this.settings = JSON.parse(json);
 
         /*
          *  INITIALIZE COMPONENTS
@@ -188,6 +135,10 @@ class App {
         return true;
     }
 
+    loadSettings(json) {
+
+    }
+
     /*
      * applySettings gets various settings from this.settings and
      * applies them to the relevant items
@@ -210,7 +161,7 @@ class App {
 
         //Gallery items
         // components.gallerySlider.style.paddingLeft = "160px";
-        components.galleryButton.style.bottom = (thumbnailHeight - buttonSize)/2 + "px";
+        components.galleryButton.style.bottom = (thumbnailHeight - buttonSize) / 2 + "px";
 
         //Thumbnails
         var elems = document.getElementsByClassName("sfc-thumbnail");
@@ -240,7 +191,7 @@ class App {
      * toggleApp shows/hides the app
      */
     toggleApp(show) {
-        
+
         let app = this.components.app;
         if (show === true) {
             app.style.display = "block";
@@ -298,8 +249,8 @@ class App {
         //set alignTo to first unhidden item if alignTo is still undefined
         if (alignTo === undefined) {
             //align to first media
-            for(let i = 0; i < this.media.length; i++){
-                if(!this.media[i].thumbnail.hidden){
+            for (let i = 0; i < this.media.length; i++) {
+                if (!this.media[i].thumbnail.hidden) {
                     alignTo = this.media[i];
                     break;
                 }
@@ -307,17 +258,17 @@ class App {
         }
 
         //If alignTo isn't found ignore alignment
-        if(alignTo === undefined || alignTo === null)
+        if (alignTo === undefined || alignTo === null)
             return;
 
         let windowCenter = window.innerWidth / 2;
         let offset = getPosition(alignTo.thumbnail).x;
 
         //move to middle of thumbnail if currently playing
-        if(alignTo === this.currentlyPlaying){
-            offset += alignTo.thumbnail.clientWidth/2;
+        if (alignTo === this.currentlyPlaying) {
+            offset += alignTo.thumbnail.clientWidth / 2;
         }
-        
+
         offset = windowCenter - offset;
         this.components.galleryTable.offset = offset;
         this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
@@ -327,13 +278,17 @@ class App {
      *  Moves the galleryTable component left/right using style.translateX
      *  - translates by setting translateX = position + value
      */
-    translateGallery(value){
+    translateGallery(value) {
         let offset = this.components.galleryTable.offset + value;
         this.components.galleryTable.offset = offset;
         this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
     }
-    scrollGalleryLeft()  { translateGallery(-1); }
-    scrollGalleryRight() { translateGallery(1);  }
+    scrollGalleryLeft() {
+        translateGallery(-1);
+    }
+    scrollGalleryRight() {
+        translateGallery(1);
+    }
 
     /*
      * play shows and plays the parsed media
@@ -435,6 +390,7 @@ class Media {
                 element = document.createElement("video");
                 element.style.height = "inherit";
                 element.preload = "auto";
+                // element.controls = false;
                 element.controls = app.settings.webm.controls;
                 break;
 

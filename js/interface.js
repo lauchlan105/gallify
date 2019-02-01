@@ -1,6 +1,8 @@
-getFile("/interface.html").then(function (response) {
-    main(response);
-});
+(async function getExternalElements(){
+    let html = await getFile("/interface.html");
+    let json = await getFile("/settings.json");
+    main(html, json);
+}())
 
 sfc = undefined;
 
@@ -11,8 +13,8 @@ sfc = undefined;
  * @param {HTML} html
  * 
  */
-function main(html) {
-    sfc = new App(html);
+function main(html, json) {
+    sfc = new App(html, json);
     sfc.fetchMedia();
     sfc.applySettings();
 

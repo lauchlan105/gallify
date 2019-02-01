@@ -1,0 +1,42 @@
+{
+
+    "app": {
+        "loopAtEnd": true,
+        "autoNext": true,
+        "autoPlay": true,
+        "openOnStart": true
+    },
+
+    "ui": {
+        "size": 100,
+
+        "gallery": {
+            "thumbnailHeight": 1,
+            "thumbnailSpacing": 0.02,
+            "thumbnailBorder": 0.02,
+            "thumbnailOpacity": 0.3
+        },
+
+        "buttons": {
+            "height": 0.6
+        },
+
+        "counter": {
+            "fontSize": 0.25
+        }
+    },
+
+    "gif": {
+        "include": true
+    },
+
+    "webm": {
+        "include": true,
+        "controls": true
+    },
+
+    "picture": {
+        "include": true
+    }
+
+}

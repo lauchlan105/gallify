@@ -21,7 +21,7 @@ class App {
                         return obj.settings.ui.size * 0.02;
                     }, //2%
                     thumbnailOpacity: function () {
-                        return 0.3
+                        return 0.3;
                     },
                     showingHeight: function () {
                         return obj.settings.ui.gallery.thumbnailHeight() +
@@ -36,7 +36,7 @@ class App {
                 buttons: {
                     height: function () {
                         return obj.settings.ui.size * 0.6;
-                    }, //70%
+                    }, //60%
                     margin: function () {
                         return (obj.settings.ui.gallery.showingHeight() - obj.settings.ui.buttons.height()) / 2;
                     }
@@ -206,7 +206,7 @@ class App {
         var standardGap = settings.ui.buttons.margin();
 
         //Gallery items
-        // components.gallerySlider.style.paddingLeft = "0px";
+        // components.gallerySlider.style.paddingLeft = "160px";
         components.galleryButton.style.bottom = (thumbnailHeight - buttonSize)/2 + "px";
 
         //Thumbnails
@@ -237,11 +237,14 @@ class App {
      * toggleApp shows/hides the app
      */
     toggleApp(show) {
+        
         let app = this.components.app;
         if (show === true) {
             app.style.display = "block";
+            document.body.style.overflow = "hidden";
         } else if (show === false) {
             app.style.display = "none";
+            document.body.style.overflow = "auto";
         } else {
             this.toggleApp(app.style.display !== "block");
         }
@@ -256,8 +259,20 @@ class App {
         let gallery = this.components.gallery;
         if (show === true) { //Show gallery
             gallery.style.height = this.settings.ui.gallery.showingHeight() + "px";
+
+            gallery.onmousedown = () => {
+                window.onmousemove = (e) => {
+                    sfc.translateGallery(e.movementX);
+                };
+            };
+
+            gallery.onmouseup = () => {
+                window.onmousemove = () => {};
+            };
+            
         } else if (show === false) { //Hide gallery
             gallery.style.height = this.settings.ui.gallery.hidingHeight() + "px";
+            gallery.ondown = () => {};
         } else { //Hide if shown, show if hidden
             this.toggleGallery(gallery.style.height === "0px");
             return;
@@ -270,19 +285,19 @@ class App {
 
         var alignTo;
 
-        //Align to currentlyPlaying if currentlyPlaying is !undefined || hidden
+        //Align to currentlyPlaying if currentlyPlaying is not undefined or hidden
         if (this.currentlyPlaying !== undefined && this.currentlyPlaying !== null) {
             //align to currently playing if not hidden
-            alignTo = this.currentlyPlaying.hidden === false ?
+            alignTo = this.currentlyPlaying.thumbnail.hidden === false ?
                 this.currentlyPlaying : undefined;
         }
 
-        //set alignTo to first !hidden item if alignTo is still undefined
+        //set alignTo to first unhidden item if alignTo is still undefined
         if (alignTo === undefined) {
             //align to first media
             for(let i = 0; i < this.media.length; i++){
                 if(!this.media[i].thumbnail.hidden){
-                    alignTo = this.media[i].thumbnail;
+                    alignTo = this.media[i];
                     break;
                 }
             }
@@ -293,21 +308,30 @@ class App {
             return;
 
         let windowCenter = window.innerWidth / 2;
-        let offset = getPosition(alignTo).x;
-        console.log(this.settings.ui);
-        offset = windowCenter - offset;
+        let offset = getPosition(alignTo.thumbnail).x;
+
+        //move to middle of thumbnail if currently playing
+        if(alignTo === this.currentlyPlaying){
+            offset += alignTo.thumbnail.clientWidth/2;
+        }
         
-        // this.components.galleryTableRow.style.transform = "translateX(" + offset + "px)";
+        offset = windowCenter - offset;
+        this.components.galleryTable.offset = offset;
+        this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
     }
 
     scrollGalleryLeft() {
-        let offset = getPosition(this.components.galleryTableRow) + 1;
-        this.components.galleryTableRow.style.transform = "translateX(" + offset + "px)";
+        translateGallery(-1);
     }
 
     scrollGalleryRight() {
-        let offset = getPosition(this.components.galleryTableRow) - 1;
-        this.components.galleryTableRow.style.transform = "translateX(" + offset + "px)";
+        translateGallery(1);
+    }
+
+    translateGallery(value){
+        let offset = this.components.galleryTable.offset + value;
+        this.components.galleryTable.offset = offset;
+        this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
     }
 
     /*
@@ -324,6 +348,8 @@ class App {
             stage.removeChild(
                 this.currentlyPlaying.content
             );
+
+            this.currentlyPlaying = undefined;
         }
 
         //Play media if parsed
@@ -336,6 +362,9 @@ class App {
             console.log(media);
             console.log("");
         }
+
+        this.alignGallery();
+
     }
 
     /*
@@ -368,6 +397,7 @@ class Media {
     constructor(app, content, thumbnail) {
 
         this.playCount = 0;
+        this.app = app;
         this.index = app.media.length;
 
         /*
@@ -449,6 +479,6 @@ class Media {
 
     deselect() {
         this.thumbnail.children[0].style.border = "2px solid transparent";
-        this.thumbnail.children[0].style.opacity = app.settings.ui.gallery.thumbnailOpacity();
+        this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity();
     }
 }

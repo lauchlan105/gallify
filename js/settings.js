@@ -23,7 +23,7 @@ function initEvents() {
 
     //Tab button events
     for (var i = 0; i < objects.navButtons.length; i++) {
-        objects.navButtons[i].onclick = function (event, target = event.target) { openTab(target); };
+        objects.navButtons[i].onclick = (event, target = event.target) => { openTab(target); };
     }
 
 }

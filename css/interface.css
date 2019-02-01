@@ -107,7 +107,7 @@
 }
 
 /*
-    Gallery and related items
+    GALLERY and related items
 */
 
 #sfc-gallery {
@@ -116,12 +116,12 @@
 }
 
 #sfc-gallery-slider {
-    padding-left: 60px;
     overflow-wrap: normal;
 }
 
 #sfc-gallery-table {
     border-collapse: separate;
+    transition: all 0.5s;
 }
 
 .sfc-thumbnail {

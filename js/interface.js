@@ -15,6 +15,31 @@ function main(html) {
     sfc = new App(html);
     sfc.fetchMedia();
     sfc.applySettings();
+
+    sfc.toggleApp(true);
+    
+    // window.onresize = temp;
+    // temp();
+}
+
+function temp(){
+    console.clear();
+    console.log("Size" + ": " + sfc.settings.ui.size);
+    console.log("");
+    console.log("Gallery...");
+    console.log("thumbnailHeight" + ": " + sfc.settings.ui.gallery.thumbnailHeight());
+    console.log("thumbnailSpacing" + ": " + sfc.settings.ui.gallery.thumbnailSpacing());
+    console.log("thumbnailBorder" + ": " + sfc.settings.ui.gallery.thumbnailBorder());
+    console.log("thumbnailOpacity" + ": " + sfc.settings.ui.gallery.thumbnailOpacity());
+    console.log("showingHeight" + ": " + sfc.settings.ui.gallery.showingHeight());
+    console.log("hidingHeight" + ": " + sfc.settings.ui.gallery.hidingHeight());
+    console.log("");
+    console.log("buttons...");
+    console.log("height" + ": " + sfc.settings.ui.buttons.height());
+    console.log("margin" + ": " + sfc.settings.ui.buttons.margin());
+    console.log("");
+    console.log("counter...");
+    console.log("fontSize" + ": " + sfc.settings.ui.counter.fontSize());
 }
 
 /**
@@ -26,9 +51,9 @@ function getFile(relativePath) {
     return new Promise((resolve, reject) => {
         //Params are message, sender, callback
         chrome.runtime.sendMessage({
-            "function": "getFile",
-            "args": [chrome.extension.getURL(relativePath)]
-        },
+                "function": "getFile",
+                "args": [chrome.extension.getURL(relativePath)]
+            },
             null,
             function (response) {
                 resolve(response.message);
@@ -45,11 +70,11 @@ function replaceLocalURLS(HTML) {
 
     let baseURL = chrome.extension.getURL("/");
     let regX = /((href)|(src))="(?!(http|chrome))/;
-    
+
     while (HTML.match(regX)) {
         HTML = HTML.replace(
             regX,
-            function (prefix) {
+            (prefix) => {
                 return prefix + baseURL;
             }
         );
@@ -63,25 +88,25 @@ function replaceLocalURLS(HTML) {
 function getPosition(el) {
     var xPos = 0;
     var yPos = 0;
-   
+
     while (el) {
-      if (el.tagName == "BODY") {
-        // deal with browser quirks with body/window/document and page scroll
-        var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
-        var yScroll = el.scrollTop || document.documentElement.scrollTop;
-   
-        xPos += (el.offsetLeft - xScroll + el.clientLeft);
-        yPos += (el.offsetTop - yScroll + el.clientTop);
-      } else {
-        // for all other non-BODY elements
-        xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
-        yPos += (el.offsetTop - el.scrollTop + el.clientTop);
-      }
-   
-      el = el.offsetParent;
+        if (el.tagName == "BODY") {
+            // deal with browser quirks with body/window/document and page scroll
+            var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
+            var yScroll = el.scrollTop || document.documentElement.scrollTop;
+
+            xPos += (el.offsetLeft - xScroll + el.clientLeft);
+            yPos += (el.offsetTop - yScroll + el.clientTop);
+        } else {
+            // for all other non-BODY elements
+            xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+            yPos += (el.offsetTop - el.scrollTop + el.clientTop);
+        }
+
+        el = el.offsetParent;
     }
     return {
-      x: xPos,
-      y: yPos
+        x: xPos,
+        y: yPos
     };
-  }
+}

@@ -49,7 +49,9 @@ class App {
                 }
             },
             app: {
-                loopAtEnd: true
+                loopAtEnd: true,
+                autoNext: true,
+                autoPlay: true
             },
             webm: {
                 controls: true
@@ -75,9 +77,9 @@ class App {
 
         function find(elemID) {
             temp = document.getElementById(elemID);
-            if (temp == null || temp == undefined) {
+
+            if (temp == null || temp == undefined)
                 errors.push(" Could not find element '" + elemID + "'");
-            }
 
             return temp;
         }
@@ -122,6 +124,7 @@ class App {
         this.components.app.style.display = "block";
         this.components.app.style.opacity = "1";
         this.components.gallery.style.height = "0px";
+        this.components.galleryTable.offset = 0; //used for scrolling gallery
 
         /*
          *  INITIALIZE EVENTS
@@ -178,12 +181,12 @@ class App {
             this.media.push(temp);
         }
 
-        for (var i = 0; i < this.media.length; i++) {
+        for (let i = 0; i < this.media.length; i++) {
             this.components.galleryTableRow.appendChild(this.media[i].thumbnail);
         }
 
         return true;
-    };
+    }
 
     /*
      * applySettings gets various settings from this.settings and
@@ -231,7 +234,7 @@ class App {
         components.counterIndex.style.fontSize = settings.ui.counter.fontSize() + "px";
 
         this.alignGallery();
-    };
+    }
 
     /*
      * toggleApp shows/hides the app
@@ -269,7 +272,7 @@ class App {
             gallery.onmouseup = () => {
                 window.onmousemove = () => {};
             };
-            
+
         } else if (show === false) { //Hide gallery
             gallery.style.height = this.settings.ui.gallery.hidingHeight() + "px";
             gallery.ondown = () => {};
@@ -320,19 +323,17 @@ class App {
         this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
     }
 
-    scrollGalleryLeft() {
-        translateGallery(-1);
-    }
-
-    scrollGalleryRight() {
-        translateGallery(1);
-    }
-
+    /*
+     *  Moves the galleryTable component left/right using style.translateX
+     *  - translates by setting translateX = position + value
+     */
     translateGallery(value){
         let offset = this.components.galleryTable.offset + value;
         this.components.galleryTable.offset = offset;
         this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
     }
+    scrollGalleryLeft()  { translateGallery(-1); }
+    scrollGalleryRight() { translateGallery(1);  }
 
     /*
      * play shows and plays the parsed media
@@ -418,7 +419,7 @@ class Media {
         /*
          * Create and assign content
          */
-        var element = undefined;
+        let element;
 
         //Create content's DOM element
         switch (this.type) {

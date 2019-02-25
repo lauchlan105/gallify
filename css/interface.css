@@ -60,7 +60,6 @@
 .sfc-button-arrow {
     height: 0px;
     width: 0px;
-    margin: auto !important;
     background-image: url("/resources/images/arrow.png");
     background-size: 70%;
     background-position-x: 57%; /*Compensation for apparent off-centered-ness*/

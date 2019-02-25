@@ -8,6 +8,8 @@ class App {
         this.currentlyPlaying = undefined;
         this.settings = JSON.parse(json);
 
+        console.log(this.settings);
+
         /*
          *  INITIALIZE COMPONENTS
          */
@@ -158,6 +160,7 @@ class App {
         var thumbnailBorder = base * ui.gallery.thumbnailBorder;
         var buttonSize = base * ui.buttons.height;
         var standardGap = base * ui.buttons.margin;
+        console.log(ui.buttons.margin * base);
 
         //Gallery items
         // components.gallerySlider.style.paddingLeft = "160px";
@@ -175,6 +178,7 @@ class App {
         //Change all buttons
         elems = document.getElementsByClassName("sfc-button");
         for (let i = 0; i < elems.length; i++) {
+            console.log(elems[i]);
             elems[i].style.padding = buttonSize / 2 + "px";
             elems[i].style.margin = "auto " + standardGap + "px";
         }

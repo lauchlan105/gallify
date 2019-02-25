@@ -10,6 +10,15 @@
     "ui": {
         "size": 100,
 
+        "stage": {
+            "color": {
+                "r": 50,
+                "g": 255,
+                "b": 20,
+                "a": 0.85
+            }
+        },
+
         "gallery": {
             "thumbnailHeight": 1,
             "thumbnailSpacing": 0.02,

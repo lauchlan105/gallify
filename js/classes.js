@@ -35,6 +35,7 @@ class App {
 
         //Main
         objects.app = find("sfc-app-container");
+        objects.main = find("sfc-main");
         objects.stage = find("sfc-stage");
 
         //Stage
@@ -47,6 +48,9 @@ class App {
         objects.galleryTable = find("sfc-gallery-table");
         objects.galleryTableRow = find("sfc-gallery-tr");
         objects.galleryButton = find("sfc-button-gallery");
+        objects.galleryCurtain = {};
+        objects.galleryCurtain.left = find("sfc-left-curtain");
+        objects.galleryCurtain.right = find("sfc-right-curtain");
 
         //Counter
         objects.counter = find("sfc-counter");
@@ -146,6 +150,11 @@ class App {
      */
     applySettings(singleSettings) {
 
+        /* 
+         * ####
+         * TODO
+         * #### 
+         */
         //Switch used for onChange triggers in settings pane
         //to avoid re-applying unchanged settings
         // switch(singleSetting){}
@@ -154,19 +163,38 @@ class App {
         var base = ui.size;
         var components = this.components;
 
-        //Calculate sizes based on settings
+        /*
+         * Calculate sizes based on settings
+         */
         var thumbnailHeight = base * ui.gallery.thumbnailHeight;
         var thumbnailSpacing = base * ui.gallery.thumbnailSpacing;
         var thumbnailBorder = base * ui.gallery.thumbnailBorder;
         var buttonSize = base * ui.buttons.height;
         var standardGap = base * ui.buttons.margin;
 
-        //Gallery items
-        // components.gallerySlider.style.paddingLeft = "160px";
+        /*
+         * Stage
+         */ 
+        var r = ui.stage.color.r;
+        var g = ui.stage.color.g;
+        var b = ui.stage.color.b;
+        var a = ui.stage.color.a;
+        var color = "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
+
+        components.main.style.background = color;
+        components.main.style["-webkit-box-shadow"] = "inset 0px 0px 89px 16px " + color;
+        components.main.style["-moz-box-shadow"] = "inset 0px 0px 89px 16px " + color;
+        components.main.style["box-shadow"] = "inset 0px 0px 89px 16px " + color;
+
+        /* 
+         * Gallery
+         */
         var halfGalleryHeight = (thumbnailHeight/2) + thumbnailBorder + thumbnailSpacing;
         components.galleryButton.style.bottom = halfGalleryHeight - (buttonSize/2)+ "px";
 
-        //Thumbnails
+        /*
+         * Gallery thumbnails
+          */
         var elems = document.getElementsByClassName("sfc-thumbnail");
         for (let i = 0; i < elems.length; i++) {
             elems[i].style.height = thumbnailHeight + "px";
@@ -175,10 +203,19 @@ class App {
             elems[i].style.opacity = ui.gallery.thumbnailOpacity;
         }
 
+        /*
+         * Gallery curtains
+         */
+        components.galleryCurtain.left.style.background  = color;
+        components.galleryCurtain.left.style.background  = "-webkit-linear-gradient(to right, " + color + " -20%, transparent)";
+        components.galleryCurtain.left.style.background  = "linear-gradient(to right, " + color + " -20%, transparent)";
+        components.galleryCurtain.right.style.background = color;
+        components.galleryCurtain.right.style.background = "-webkit-linear-gradient(to right, " + color + " -20%, transparent)";
+        components.galleryCurtain.right.style.background = "linear-gradient(to right, " + color + " -20%, transparent)";
+
         //Change all buttons
         elems = document.getElementsByClassName("sfc-button");
         for (let i = 0; i < elems.length; i++) {
-            console.log(elems[i]);
             elems[i].style.padding = buttonSize / 2 + "px";
             elems[i].style.margin = "auto " + standardGap + "px";
         }
@@ -241,6 +278,12 @@ class App {
         } else { //Hide if shown, show if hidden
             this.toggleGallery(gallery.style.height === "0px");
             return;
+        }
+
+        if(this.currentlyPlaying !== undefined){
+            if(this.currentlyPlaying.isVideo()){
+                window.alert(this.currentlyPlaying.content.currentTime);
+            }
         }
 
         this.alignGallery();
@@ -448,5 +491,16 @@ class Media {
     deselect() {
         this.thumbnail.children[0].style.border = "2px solid transparent";
         this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
+    }
+
+    isVideo() {
+        switch(this.type){
+            case '.webm':
+            case '.mp4':
+            case '.gifv':
+                return true;
+            default:
+                return false;
+        }
     }
 }

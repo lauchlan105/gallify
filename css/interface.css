@@ -15,8 +15,10 @@
 }
 
 #sfc-main {
+    /*
+     * box shadow and background is overwritten by app settings (classes.js)
+     */
     background-color: rgba(0,0,0,0.95);
-
     -webkit-box-shadow: inset 0px 0px 89px 16px rgba(0,0,0,0.8);
     -moz-box-shadow: inset 0px 0px 89px 16px rgba(0,0,0,0.8);
     box-shadow: inset 0px 0px 89px 16px rgba(0,0,0,0.8);
@@ -147,6 +149,10 @@ img#sfc-now-playing {
     height: inherit;
     position: fixed;
     z-index: 100;
+
+    /*
+     * Background colors overridden in classes.js
+     */
     background: rgba(0,0,0,0.95);  /* fallback for old browsers */
     background: -webkit-linear-gradient(to right, rgba(0,0,0,0.95) -20%, transparent);  /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(to right, rgba(0,0,0,0.95) -20%, transparent); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */

@@ -1,4 +1,4 @@
-* {
+#sfc-app-container * {
     margin: 0px;
     padding: 0px;
 }
@@ -58,6 +58,9 @@
 .sfc-button:hover { opacity: 1; }
 
 .sfc-button-arrow {
+    height: 0px;
+    width: 0px;
+    margin: auto !important;
     background-image: url("/resources/images/arrow.png");
     background-size: 70%;
     background-position-x: 57%; /*Compensation for apparent off-centered-ness*/
@@ -91,6 +94,12 @@
     margin: auto;
     max-width: 100%;
     max-height: 100%;
+}
+
+img#sfc-now-playing {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
 }
 
 #sfc-counter {
@@ -146,8 +155,10 @@
     flex-direction: column;
 }
 
-.sfc-flex-grow   { flex: 1 0 auto; }
-.sfc-flex-shrink { flex: 0 1 auto; }
+.sfc-flex-grow   { flex: 1 0 auto; }    /* allow shrinking */
+.sfc-flex-shrink { flex: 0 1 auto; }    /* allow growing   */
+.sfc-flex-hard   { flex: 0 0 auto; }    /* allow neither   */
+.sfc-flex-soft   { flex: 1 1 auto; }    /* allow both      */
 
 .sfc-flex-around { justify-content: space-around; }
 .sfc-flex-between{ justify-content: space-between }

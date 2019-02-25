@@ -15,7 +15,7 @@
 }
 
 #sfc-main {
-    background-color: rgba(0,0,0,0.8);
+    background-color: rgba(0,0,0,0.95);
 
     -webkit-box-shadow: inset 0px 0px 89px 16px rgba(0,0,0,0.8);
     -moz-box-shadow: inset 0px 0px 89px 16px rgba(0,0,0,0.8);
@@ -139,6 +139,23 @@ img#sfc-now-playing {
     border: 2px solid transparent;
     opacity: 0.5;
 }
+
+.sfc-overlay-left,
+.sfc-overlay-right {
+    pointer-events: none;
+    width: 5vw;
+    height: inherit;
+    position: fixed;
+    z-index: 100;
+    background: rgba(0,0,0,0.95);  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, rgba(0,0,0,0.95) -20%, transparent);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, rgba(0,0,0,0.95) -20%, transparent); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+.sfc-overlay-right {
+    right: 0px;
+    transform: scaleX(-1);
+}
+
 
 /*
     Flex classes...

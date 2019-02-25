@@ -160,18 +160,18 @@ class App {
         var thumbnailBorder = base * ui.gallery.thumbnailBorder;
         var buttonSize = base * ui.buttons.height;
         var standardGap = base * ui.buttons.margin;
-        console.log(ui.buttons.margin * base);
 
         //Gallery items
         // components.gallerySlider.style.paddingLeft = "160px";
-        components.galleryButton.style.bottom = (thumbnailHeight - buttonSize) / 2 + "px";
+        var halfGalleryHeight = (thumbnailHeight/2) + thumbnailBorder + thumbnailSpacing;
+        components.galleryButton.style.bottom = halfGalleryHeight - (buttonSize/2)+ "px";
 
         //Thumbnails
         var elems = document.getElementsByClassName("sfc-thumbnail");
         for (let i = 0; i < elems.length; i++) {
             elems[i].style.height = thumbnailHeight + "px";
             elems[i].style.margin = thumbnailSpacing + "px";
-            elems[i].style.border = thumbnailBorder + "px solid transparent";
+            elems[i].style.borderSize = thumbnailBorder + "px";
             elems[i].style.opacity = ui.gallery.thumbnailOpacity;
         }
 

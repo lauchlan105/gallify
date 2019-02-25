@@ -93,9 +93,8 @@ class App {
     }
 
     /*
-     * fetchMedia runs the getMedia function that
-     * is found in the relevant js file under the
-     * 'data collection' directory.
+     * fetchMedia runs the relevant getMedia function found under the
+     * 'data collection' directory. It then creates all the media objects necessary
      */
     fetchMedia() {
 
@@ -149,15 +148,16 @@ class App {
         //to avoid re-applying unchanged settings
         // switch(singleSetting){}
 
-        var settings = this.settings;
+        var ui = this.settings.ui;
+        var base = ui.size;
         var components = this.components;
 
         //Calculate sizes based on settings
-        var thumbnailHeight = settings.ui.gallery.thumbnailHeight();
-        var thumbnailSpacing = settings.ui.gallery.thumbnailSpacing();
-        var thumbnailBorder = settings.ui.gallery.thumbnailBorder();
-        var buttonSize = settings.ui.buttons.height();
-        var standardGap = settings.ui.buttons.margin();
+        var thumbnailHeight = base * ui.gallery.thumbnailHeight;
+        var thumbnailSpacing = base * ui.gallery.thumbnailSpacing;
+        var thumbnailBorder = base * ui.gallery.thumbnailBorder;
+        var buttonSize = base * ui.buttons.height;
+        var standardGap = base * ui.buttons.margin;
 
         //Gallery items
         // components.gallerySlider.style.paddingLeft = "160px";
@@ -169,7 +169,7 @@ class App {
             elems[i].style.height = thumbnailHeight + "px";
             elems[i].style.margin = thumbnailSpacing + "px";
             elems[i].style.border = thumbnailBorder + "px solid transparent";
-            elems[i].style.opacity = settings.ui.gallery.thumbnailOpacity();
+            elems[i].style.opacity = ui.gallery.thumbnailOpacity;
         }
 
         //Change all buttons
@@ -180,9 +180,9 @@ class App {
         }
 
         //counter
-        components.counter.style.fontSize = settings.ui.counter.fontSize() + "px";
-        components.counterTotal.style.fontSize = settings.ui.counter.fontSize() + "px";
-        components.counterIndex.style.fontSize = settings.ui.counter.fontSize() + "px";
+        components.counter.style.fontSize = ui.counter.fontSize + "px";
+        components.counterTotal.style.fontSize = ui.counter.fontSize + "px";
+        components.counterIndex.style.fontSize = ui.counter.fontSize + "px";
 
         this.alignGallery();
     }
@@ -211,8 +211,15 @@ class App {
      */
     toggleGallery(show) {
         let gallery = this.components.gallery;
+        let settings = this.settings.ui.gallery;
+        let base = this.settings.ui.size; //base ui size
+
         if (show === true) { //Show gallery
-            gallery.style.height = this.settings.ui.gallery.showingHeight() + "px";
+
+            let showingHeight = (base * settings.thumbnailHeight) +
+                                (base * settings.thumbnailBorder*2) +
+                                (base * settings.thumbnailSpacing*2);
+            gallery.style.height = showingHeight + "px";
 
             gallery.onmousedown = () => {
                 window.onmousemove = (e) => {
@@ -225,7 +232,7 @@ class App {
             };
 
         } else if (show === false) { //Hide gallery
-            gallery.style.height = this.settings.ui.gallery.hidingHeight() + "px";
+            gallery.style.height = "0px";
             gallery.ondown = () => {};
         } else { //Hide if shown, show if hidden
             this.toggleGallery(gallery.style.height === "0px");
@@ -436,6 +443,6 @@ class Media {
 
     deselect() {
         this.thumbnail.children[0].style.border = "2px solid transparent";
-        this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity();
+        this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
     }
 }

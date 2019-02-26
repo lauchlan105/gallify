@@ -38,12 +38,13 @@
     },
 
     "gif": {
-        "include": false
+        "include": true
     },
 
     "webm": {
         "include": true,
-        "controls": true
+        "controls": true,
+        "autoStart": false
     },
 
     "picture": {

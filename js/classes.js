@@ -9,8 +9,6 @@ class App {
         this.currentlyPlaying = undefined;
         this.settings = JSON.parse(json);
 
-        console.log(this.settings);
-
         /*
          *  INITIALIZE COMPONENTS
          */
@@ -92,17 +90,15 @@ class App {
          */
         this.components.gallery.addEventListener(whichTransitionEvent(), function(){
             window.app.components.gallery.transitioning = false;
-            if(window.app.currentlyPlaying)
-                window.app.currentlyPlaying.refreshSize();
         });
 
         //Buttons
         this.components.galleryButton.onclick = this.toggleGallery.bind(this);
         this.components.left.addEventListener('click', function(e){
-            window.app.previous();
+            window.app.playPrevious();
         });
         this.components.right.addEventListener('click', function(e){
-            window.app.next();
+            window.app.playNext();
         });
 
         //Events to close app by clicking background
@@ -284,6 +280,7 @@ class App {
         function refresh(){
             
             var callback = function(){
+                console.log("refreshing");
                 if(window.app.currentlyPlaying !== undefined)
                     window.app.currentlyPlaying.refreshSize();
             };
@@ -292,7 +289,7 @@ class App {
                 return window.app.components.gallery.transitioning;
             };
 
-            runUntil(callback, condition);
+            runUntil(callback, condition, 50);
         }
 
         if (show === true) { //Show gallery
@@ -411,10 +408,8 @@ class App {
     }
 
     /*
-     * next deselects the current media and plays the
-     * media next in line. 'next' being determined on
-     * the state of the player. ie. if randomise is on,
-     * next could be anything.
+     * previous returns the previous valid media object
+     * based on user settings
      */
     previous() {
 
@@ -435,23 +430,20 @@ class App {
 
             distance++;
             if(distance >= this.media.length){
-                this.play();
-                break;
+                return undefined;
             }
 
             if(this.media[i].canPlay()){
-                this.play(this.media[i]);
-                break;
+                return this.media[i];
             }
 
         }
     }
+    playPrevious(){ this.play(this.previous()); }
     
     /*
-     * next deselects the current media and plays the
-     * media next in line. 'next' being determined on
-     * the state of the player. ie. if randomise is on,
-     * next could be anything.
+     * next returns the next valid media object
+     * based on user settings
      */
     next() {
 
@@ -472,17 +464,16 @@ class App {
 
             distance++;
             if(distance >= this.media.length){
-                this.play();
-                break;
+                return undefined;
             }
 
             if(this.media[i].canPlay()){
-                this.play(this.media[i]);
-                break;
+                return this.media[i];
             }
 
         }
     }
+    playNext(){ this.play(this.next()); }
 
 }
 
@@ -563,11 +554,24 @@ class Media {
 
         this.thumbnail = tableData;
 
+        /*
+         * Events
+         */
+        this.content.addEventListener('ended', this.onEnd);
+
+        this.content.addEventListener('canplay', function(){
+            document.body.appendChild(this.content);
+            this.vidX = this.content.clientWidth;
+            this.vidY = this.content.clientHeight;
+            document.body.removeChild(this.content);
+        }.bind(this));
+
     }
 
     select() {
         this.thumbnail.children[0].style.border = "2px solid white";
         this.thumbnail.children[0].style.opacity = "1";
+        this.onSelect();
     }
 
     deselect() {
@@ -575,12 +579,22 @@ class Media {
         this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
     }
 
+    onSelect(){
+        this.refreshSize();
+        if(window.app.settings.webm.autoStart)
+            this.content.play();
+    }
+
+    onDeselect(){ 
+
+    }
+
     onStart() {
 
     }
 
     onEnd() {
-
+        window.app.next();
     }
 
     refreshSize(){
@@ -672,7 +686,9 @@ function whichTransitionEvent(){
  * @param {Function} callback 
  * @param {Function} condition 
  */
-async function runUntil(callback, condition){
+var exampleFunc = function(){ console.error("Error: runUntil used without a function to run"); };
+async function runUntil(callback = exampleFunc, condition = false, delay = 50){
     callback();
-    setTimeout(() => { runUntil(callback, condition); }, 10);
+    if(condition())
+        setTimeout(() => { runUntil(callback, condition); }, delay);
 };

@@ -8,7 +8,7 @@
     },
 
     "ui": {
-        "size": 190,
+        "size": 100,
 
         "stage": {
             "color": {
@@ -28,7 +28,8 @@
 
         "buttons": {
             "height": 0.6,
-            "margin": 0.2
+            "margin": 0.2,
+            "opacity": 0.5
         },
 
         "counter": {
@@ -37,7 +38,7 @@
     },
 
     "gif": {
-        "include": true
+        "include": false
     },
 
     "webm": {

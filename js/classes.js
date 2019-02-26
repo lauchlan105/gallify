@@ -37,6 +37,7 @@ class App {
         //Main
         objects.app = find("sfc-app-container");
         objects.main = find("sfc-main");
+        objects.stageParent = find("sfc-stage-parent");
         objects.stage = find("sfc-stage");
 
         //Stage
@@ -84,24 +85,43 @@ class App {
          *  INITIALIZE EVENTS
          */
 
+        /*
+         * This event waits for the gallery transition to end.
+         * Gallery transition ending halts events that need to loop
+         * while the gallery is moving (see toggleGallery)
+         */
         this.components.gallery.addEventListener(whichTransitionEvent(), function(){
             window.app.components.gallery.transitioning = false;
             if(window.app.currentlyPlaying)
                 window.app.currentlyPlaying.refreshSize();
         });
 
+        //Buttons
         this.components.galleryButton.onclick = this.toggleGallery.bind(this);
+        this.components.left.addEventListener('click', function(e){
+            window.app.previous();
+        });
+        this.components.right.addEventListener('click', function(e){
+            window.app.next();
+        });
 
-        this.components.stage.onclick = (e) => {
-            if (e.target == this.components.stage)
-                this.toggleApp();
-        };
+        //Events to close app by clicking background
+        this.components.stage.addEventListener('click', function(e){
+            if(e.target === window.app.components.stage)
+                window.app.toggleApp(false);
+        });
+        this.components.stageParent.addEventListener('click', function(e){
+            if(e.target === window.app.components.stageParent)
+                window.app.toggleApp(false);
+        });
+        this.components.gallerySlider.addEventListener('click', function(e){
+            if(e.target === window.app.components.gallerySlider)
+                window.app.toggleApp(false);
+        });
 
-        this.components.left.onclick = (e) => {
-            this.settings.ui.size += 5;
-            this.applySettings();
-            this.toggleGallery(this.components.gallery.style.height !== "0px");
-        };
+        window.onclick = function(e){
+            // console.log(e.target);
+        }
 
     }
 
@@ -145,10 +165,6 @@ class App {
         }
 
         return true;
-    }
-
-    loadSettings(json) {
-
     }
 
     /*
@@ -302,6 +318,10 @@ class App {
 
     }
 
+    /*
+     * alignGallery translates the galleryTable so that the
+     * currently playing media is in the center of the window
+     */
     alignGallery() {
 
         var alignTo;
@@ -380,7 +400,7 @@ class App {
             this.currentlyPlaying = media;
             this.currentlyPlaying.select();
             stage.appendChild(media.content);
-        } else {
+        } else if (media !== undefined){
             console.log("Invalid media:");
             console.log(media);
             console.log("");
@@ -396,21 +416,71 @@ class App {
      * the state of the player. ie. if randomise is on,
      * next could be anything.
      */
-    next() {
+    previous() {
 
-        //Base next() on whether media is currently playing
-        if (this.currentlyPlaying) {
+        var index = 0;
+        var distance = 0;
+        if (this.currentlyPlaying)
+            index = this.currentlyPlaying.index;
 
-            //if the user would like to go back to the start of
-            //the media when they reach the end
-            if (this.settings.app.loopAtEnd) {
-                var nextMedia = this.currentlyPlaying.index % this.media.length;
-                nextMedia = this.media[nextMedia];
-                this.play(nextMedia);
+        index--; //start at the next media straight away
+        for(var i = index; i < this.media.length; i--){
+
+            //This resets to the start/end of array if 
+            //the option allows
+            if(this.settings.app.loopAtEnd){
+                i += this.media.length;
+                i %= this.media.length;
             }
 
-        } else {
-            this.play(this.media[0]);
+            distance++;
+            if(distance >= this.media.length){
+                this.play();
+                break;
+            }
+
+            if(this.media[i].canPlay()){
+                this.play(this.media[i]);
+                break;
+            }
+
+        }
+    }
+    
+    /*
+     * next deselects the current media and plays the
+     * media next in line. 'next' being determined on
+     * the state of the player. ie. if randomise is on,
+     * next could be anything.
+     */
+    next() {
+
+        var index = -1;
+        var distance = 0;
+        if (this.currentlyPlaying)
+            index = this.currentlyPlaying.index;
+
+        index++; //start at the next media straight away
+        for(var i = index; i <= this.media.length; i++){
+
+            //This resets to the start/end of array if 
+            //the option allows
+            if(this.settings.app.loopAtEnd){
+                i += this.media.length;
+                i %= this.media.length;
+            }
+
+            distance++;
+            if(distance >= this.media.length){
+                this.play();
+                break;
+            }
+
+            if(this.media[i].canPlay()){
+                this.play(this.media[i]);
+                break;
+            }
+
         }
     }
 
@@ -505,6 +575,14 @@ class Media {
         this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
     }
 
+    onStart() {
+
+    }
+
+    onEnd() {
+
+    }
+
     refreshSize(){
         if(this.vidX === undefined)
             this.vidX = this.content.clientWidth;
@@ -542,6 +620,25 @@ class Media {
             case '.mp4':
             case '.gifv':
                 return true;
+            default:
+                return false;
+        }
+    }
+
+    canPlay(){
+        switch(this.type){
+            case '.webm':
+            case '.mp4':
+            case '.gifv':
+                return window.app.settings.webm.include
+                break;
+            case '.jpg':
+            case '.png':
+                return window.app.settings.picture .include
+                break;
+            case '.gif':
+                return window.app.settings.gif.include
+                break;
             default:
                 return false;
         }

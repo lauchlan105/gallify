@@ -3,6 +3,10 @@
     padding: 0px;
 }
 
+#sfc-app-container *.click-through {
+    pointer-events: none;
+}
+
 /*
     MAIN CONTAINERS
 */

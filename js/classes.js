@@ -84,7 +84,8 @@ class App {
          *  INITIALIZE EVENTS
          */
 
-        this.components.gallery.addEventListener('transitionrun', function(){
+        this.components.gallery.addEventListener(whichTransitionEvent(), function(){
+            window.app.components.gallery.transitioning = false;
             if(window.app.currentlyPlaying)
                 window.app.currentlyPlaying.refreshSize();
         });
@@ -261,18 +262,23 @@ class App {
         let settings = this.settings.ui.gallery;
         let base = this.settings.ui.size; //base ui size
 
-        async function refresh(){
-            if(window.app.currentlyPlaying !== undefined){
-                window.app.currentlyPlaying.refreshSize();
-            }
-            setTimeout(function(){
-                if(window.app.components.gallery.transitioning)
-                    refresh();
-            }, 10);
-        };
+        //Uses runUntil util function
+        //to run callback() until condition is false.
+        //gallery.trainsitioning is set by transitionend event
+        function refresh(){
+            
+            var callback = function(){
+                if(window.app.currentlyPlaying !== undefined)
+                    window.app.currentlyPlaying.refreshSize();
+            };
 
-        refresh();
-        
+            var condition = function(){
+                return window.app.components.gallery.transitioning;
+            };
+
+            runUntil(callback, condition);
+        }
+
         if (show === true) { //Show gallery
 
             let showingHeight = (base * settings.thumbnailHeight) +
@@ -281,12 +287,12 @@ class App {
             gallery.style.height = showingHeight + "px";
             
             gallery.transitioning = true;
-            // refresh();
+            refresh();
 
         } else if (show === false) { //Hide gallery
             gallery.style.height = "0px";
             gallery.transitioning = true;
-            // refresh();
+            refresh();
         } else { //Hide if shown, show if hidden
             this.toggleGallery(gallery.style.height === "0px");
             return;
@@ -562,3 +568,14 @@ function whichTransitionEvent(){
         }
     }
 }
+
+/**
+ * Runs the specefied callback function until 
+ * the condition function returns false
+ * @param {Function} callback 
+ * @param {Function} condition 
+ */
+async function runUntil(callback, condition){
+    callback();
+    setTimeout(() => { runUntil(callback, condition); }, 10);
+};

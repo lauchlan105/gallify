@@ -2,7 +2,8 @@ class App {
 
     constructor(html, json) {
 
-        let obj = this;
+        window.app = this;
+
         this.components = {};
         this.media = [];
         this.currentlyPlaying = undefined;
@@ -82,6 +83,11 @@ class App {
         /*
          *  INITIALIZE EVENTS
          */
+
+        this.components.gallery.addEventListener('transitionrun', function(){
+            if(window.app.currentlyPlaying)
+                window.app.currentlyPlaying.refreshSize();
+        });
 
         this.components.galleryButton.onclick = this.toggleGallery.bind(this);
 
@@ -255,38 +261,39 @@ class App {
         let settings = this.settings.ui.gallery;
         let base = this.settings.ui.size; //base ui size
 
+        async function refresh(){
+            if(window.app.currentlyPlaying !== undefined){
+                window.app.currentlyPlaying.refreshSize();
+            }
+            setTimeout(function(){
+                if(window.app.components.gallery.transitioning)
+                    refresh();
+            }, 10);
+        };
+
+        refresh();
+        
         if (show === true) { //Show gallery
 
             let showingHeight = (base * settings.thumbnailHeight) +
                                 (base * settings.thumbnailBorder*2) +
                                 (base * settings.thumbnailSpacing*2);
             gallery.style.height = showingHeight + "px";
-
-            gallery.onmousedown = () => {
-                window.onmousemove = (e) => {
-                    sfc.translateGallery(e.movementX);
-                };
-            };
-
-            gallery.onmouseup = () => {
-                window.onmousemove = () => {};
-            };
+            
+            gallery.transitioning = true;
+            // refresh();
 
         } else if (show === false) { //Hide gallery
             gallery.style.height = "0px";
-            gallery.ondown = () => {};
+            gallery.transitioning = true;
+            // refresh();
         } else { //Hide if shown, show if hidden
             this.toggleGallery(gallery.style.height === "0px");
             return;
         }
 
-        if(this.currentlyPlaying !== undefined){
-            if(this.currentlyPlaying.isVideo()){
-                window.alert(this.currentlyPlaying.content.currentTime);
-            }
-        }
-
         this.alignGallery();
+
     }
 
     alignGallery() {
@@ -442,9 +449,8 @@ class Media {
             case ".mp4":
             case ".gifv":
                 element = document.createElement("video");
-                element.style.height = "inherit";
+                // element.style.height = "inherit";
                 element.preload = "auto";
-                // element.controls = false;
                 element.controls = app.settings.webm.controls;
                 break;
 
@@ -493,6 +499,37 @@ class Media {
         this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
     }
 
+    refreshSize(){
+        if(this.vidX === undefined)
+            this.vidX = this.content.clientWidth;
+        if(this.vidY === undefined)
+            this.vidY = this.content.clientHeight;
+
+        var vidX = this.vidX;
+        var vidY = this.vidY;
+        var stageX = window.app.components.stage.clientWidth;
+        var stageY = window.app.components.stage.clientHeight;
+
+        var multi = stageX/vidX;
+        vidX *= multi;
+        vidY *= multi;
+
+        var vidRatio = vidX/vidY;
+        var stageRatio = stageX/stageY;
+
+        if(vidRatio > stageRatio){
+            this.content.style.height = "";
+            this.content.style.width = "inherit";
+        }else if(vidRatio < stageRatio){
+            this.content.style.width = "";
+            this.content.style.height = "inherit";
+        }else{
+            this.content.style.width = "inherit";
+            this.content.style.height = "inherit";
+        }
+
+    }
+
     isVideo() {
         switch(this.type){
             case '.webm':
@@ -501,6 +538,27 @@ class Media {
                 return true;
             default:
                 return false;
+        }
+    }
+}
+
+/*
+ * solution for https://stackoverflow.com/questions/15617970/wait-for-css-transition
+ * Provided by stackeroverflow user - "What have you tried"
+ */
+function whichTransitionEvent(){
+    var t;
+    var el = document.createElement('fakeelement');
+    var transitions = {
+      'transition':'transitionend',
+      'OTransition':'oTransitionEnd',
+      'MozTransition':'transitionend',
+      'WebkitTransition':'webkitTransitionEnd'
+    };
+
+    for(t in transitions){
+        if( el.style[t] !== undefined ){
+            return transitions[t];
         }
     }
 }

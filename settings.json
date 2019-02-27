@@ -2,7 +2,6 @@
 
     "app": {
         "loopAtEnd": true,
-        "autoNext": true,
         "autoPlay": true,
         "openOnStart": true
     },
@@ -38,17 +37,21 @@
     },
 
     "gif": {
-        "include": true
+        "include": true,
+        "autoStart": true
     },
 
     "webm": {
         "include": true,
         "controls": true,
-        "autoStart": false
+        "autoStart": true,
+        "restartOnSelect": true,
+        "onend": 2
     },
 
     "picture": {
-        "include": true
+        "include": true,
+        "onend": 5
     }
 
 }

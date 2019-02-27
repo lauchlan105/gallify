@@ -74,7 +74,7 @@ class App {
          *  thus useful for logical operations
          */
 
-        this.components.app.style.display = "block";
+        this.components.app.style.display = "none";
         this.components.app.style.opacity = "1";
         this.components.gallery.style.height = "0px";
         this.components.galleryTable.offset = 0; //used for scrolling gallery
@@ -118,6 +118,9 @@ class App {
         window.onclick = function(e){
             // console.log(e.target);
         }
+
+        if(this.settings.app.openOnStart)
+            window.app.toggleApp(true);
 
     }
 
@@ -379,9 +382,13 @@ class App {
      */
     play(media) {
 
+        console.log("playing...");
+        console.log(media);
+
         var stage = this.components.stage;
 
         if (this.currentlyPlaying) {
+            console.log(this.currentlyPlaying);
             this.currentlyPlaying.deselect();
 
             //Remove currently playing
@@ -476,219 +483,3 @@ class App {
     playNext(){ this.play(this.next()); }
 
 }
-
-class Media {
-    constructor(app, content, thumbnail) {
-
-        this.playCount = 0;
-        this.app = app;
-        this.index = app.media.length;
-
-        /*
-         * Get and assign type (ie. gif, webm, mp4, etc.). 
-         * Assign "" if invalid
-         */
-        var regX = /\.{1}(jpg|png|webm|gif|gifv|mp4)/gi;
-        var matches = content.match(regX);
-
-        if (matches.length !== 1) {
-            console.error("Invalid media type: " + content);
-            console.error(matches);
-            this.type = "";
-        } else {
-            this.type = matches[0];
-        }
-
-        /*
-         * Create and assign content
-         */
-        let element;
-
-        //Create content's DOM element
-        switch (this.type) {
-            case ".jpg":
-            case ".png":
-            case ".gif":
-                element = document.createElement("img");
-                break;
-
-            case ".webm":
-            case ".mp4":
-            case ".gifv":
-                element = document.createElement("video");
-                // element.style.height = "inherit";
-                element.preload = "auto";
-                element.controls = app.settings.webm.controls;
-                break;
-
-            default:
-                console.log("Content type was not caught");
-                console.log(" when creating the element");
-                console.log(type);
-                break;
-        }
-
-        element.id = "sfc-now-playing";
-        element.src = content;
-
-        this.content = element;
-
-        /*
-         * Create thumbnail element and assign onclick
-         */
-
-        //Create thumbnail
-        let image = document.createElement("img");
-        image.src = thumbnail;
-        image.className = "sfc-thumbnail";
-
-        //Create surrounding table cell
-        var tableData = document.createElement("td");
-        tableData.appendChild(image);
-
-        var obj = this;
-
-        tableData.onclick = function (event) {
-            app.play(obj);
-        };
-
-        this.thumbnail = tableData;
-
-        /*
-         * Events
-         */
-        this.content.addEventListener('ended', this.onEnd);
-
-        this.content.addEventListener('canplay', function(){
-            document.body.appendChild(this.content);
-            this.vidX = this.content.clientWidth;
-            this.vidY = this.content.clientHeight;
-            document.body.removeChild(this.content);
-        }.bind(this));
-
-    }
-
-    select() {
-        this.thumbnail.children[0].style.border = "2px solid white";
-        this.thumbnail.children[0].style.opacity = "1";
-        this.onSelect();
-    }
-
-    deselect() {
-        this.thumbnail.children[0].style.border = "2px solid transparent";
-        this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
-    }
-
-    onSelect(){
-        this.refreshSize();
-        if(window.app.settings.webm.autoStart)
-            this.content.play();
-    }
-
-    onDeselect(){ 
-
-    }
-
-    onStart() {
-
-    }
-
-    onEnd() {
-        window.app.next();
-    }
-
-    refreshSize(){
-        if(this.vidX === undefined)
-            this.vidX = this.content.clientWidth;
-        if(this.vidY === undefined)
-            this.vidY = this.content.clientHeight;
-
-        var vidX = this.vidX;
-        var vidY = this.vidY;
-        var stageX = window.app.components.stage.clientWidth;
-        var stageY = window.app.components.stage.clientHeight;
-
-        var multi = stageX/vidX;
-        vidX *= multi;
-        vidY *= multi;
-
-        var vidRatio = vidX/vidY;
-        var stageRatio = stageX/stageY;
-
-        if(vidRatio > stageRatio){
-            this.content.style.height = "";
-            this.content.style.width = "inherit";
-        }else if(vidRatio < stageRatio){
-            this.content.style.width = "";
-            this.content.style.height = "inherit";
-        }else{
-            this.content.style.width = "inherit";
-            this.content.style.height = "inherit";
-        }
-
-    }
-
-    isVideo() {
-        switch(this.type){
-            case '.webm':
-            case '.mp4':
-            case '.gifv':
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    canPlay(){
-        switch(this.type){
-            case '.webm':
-            case '.mp4':
-            case '.gifv':
-                return window.app.settings.webm.include
-                break;
-            case '.jpg':
-            case '.png':
-                return window.app.settings.picture .include
-                break;
-            case '.gif':
-                return window.app.settings.gif.include
-                break;
-            default:
-                return false;
-        }
-    }
-}
-
-/*
- * solution for https://stackoverflow.com/questions/15617970/wait-for-css-transition
- * Provided by stackeroverflow user - "What have you tried"
- */
-function whichTransitionEvent(){
-    var t;
-    var el = document.createElement('fakeelement');
-    var transitions = {
-      'transition':'transitionend',
-      'OTransition':'oTransitionEnd',
-      'MozTransition':'transitionend',
-      'WebkitTransition':'webkitTransitionEnd'
-    };
-
-    for(t in transitions){
-        if( el.style[t] !== undefined ){
-            return transitions[t];
-        }
-    }
-}
-
-/**
- * Runs the specefied callback function until 
- * the condition function returns false
- * @param {Function} callback 
- * @param {Function} condition 
- */
-var exampleFunc = function(){ console.error("Error: runUntil used without a function to run"); };
-async function runUntil(callback = exampleFunc, condition = false, delay = 50){
-    callback();
-    if(condition())
-        setTimeout(() => { runUntil(callback, condition); }, delay);
-};

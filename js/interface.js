@@ -18,8 +18,6 @@ function main(html, json) {
     sfc.fetchMedia();
     sfc.applySettings();
 
-    sfc.toggleApp(true);
-    
     // window.onresize = temp;
     // temp();
 }

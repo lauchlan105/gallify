@@ -46,6 +46,8 @@
         "controls": true,
         "autoStart": true,
         "restartOnSelect": true,
+        "sound": true,
+        "defaultVolume": 1,
         "onend": 2
     },
 

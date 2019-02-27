@@ -1,9 +1,8 @@
 class Media {
-    constructor(app, content, thumbnail) {
+    constructor(content, thumbnail) {
 
         this.playCount = 0;
-        this.app = app;
-        this.index = app.media.length;
+        this.index = window.app.media.length;
 
         /*
          * Get and assign type (ie. gif, webm, mp4, etc.). 
@@ -53,6 +52,25 @@ class Media {
 
         this.content = element;
 
+        if(this.isVideo()){
+            var el = document.createElement("video");
+            el.src = element.src;
+            el.preload = "auto";
+            el.id = element.src;
+
+            document.body.appendChild(el);
+            function test(el){
+                this.vidX = el.clientWidth;
+                this.vidY = el.clientHeight;
+                document.body.removeChild(el);
+            }
+
+            el.addEventListener('loadeddata', function(e){
+                test = test.bind(this);
+                test(e.target);
+            }.bind(this));
+        }
+
         /*
          * Create thumbnail element and assign onclick
          */
@@ -69,7 +87,7 @@ class Media {
         var obj = this;
 
         tableData.onclick = function (event) {
-            app.play(obj);
+            window.app.play(obj);
         };
 
         this.thumbnail = tableData;
@@ -80,12 +98,10 @@ class Media {
         this.content.addEventListener('ended', this.onEnd.bind(this));
 
         this.content.addEventListener('loadeddata', function(){
-            if(this.vidX === undefined || this.vidY === undefined){
-                document.body.appendChild(this.content);
-                this.vidX = this.content.clientWidth;
-                this.vidY = this.content.clientHeight;
-                document.body.removeChild(this.content);
-            }
+            document.body.appendChild(this.content);
+            this.vidX = this.content.clientWidth;
+            this.vidY = this.content.clientHeight;
+            document.body.removeChild(this.content);
         }.bind(this));
 
     }
@@ -98,13 +114,17 @@ class Media {
 
     deselect() {
         this.thumbnail.children[0].style.border = "2px solid transparent";
-        this.thumbnail.children[0].style.opacity = this.app.settings.ui.gallery.thumbnailOpacity;
+        this.thumbnail.children[0].style.opacity = window.app.settings.ui.gallery.thumbnailOpacity;
     }
 
     play(){ 
         if(this.content){
-            if(this.isVideo())
+            if(this.isVideo()){
+                var videoSettings = window.app.settings.webm;
+                var volume = videoSettings.sound ? videoSettings.defaultVolume : 0;
+                this.content.volume = volume;
                 this.content.play();
+            }
         }
     }
 
@@ -162,6 +182,7 @@ class Media {
     }
 
     refreshSize(fixed){
+        fixed = fixed === true ? true : false;
         var vidX = this.vidX;
         var vidY = this.vidY;
         var stageX = window.app.components.stage.clientWidth;
@@ -174,20 +195,33 @@ class Media {
         var vidRatio = vidX/vidY;
         var stageRatio = stageX/stageY;
 
-        var newX = fixed ? stageX + "px" : "inherit";
-        var newY = fixed ? stageY + "px" : "inherit";
+        // var newX = fixed ? stageX + "px" : "";
+        // var newY = fixed ? stageY + "px" : "";
+
+        // console.log(newX + ":" + newY);
+
+        var newX = "inherit";
+        var newY = "inherit";
 
         if(vidRatio > stageRatio){
-            this.content.style.height = "";
-            this.content.style.width = newX;
+            //hit horizontal"
+            // console.log("horizontal: X: inherit :: Y: " + newY);
+            newX = fixed ? stageX + "px" : "100%";
+            newY = "auto";
         }else if(vidRatio < stageRatio){
-            this.content.style.width = "";
-            this.content.style.height = newY;
+            //hit vertical
+            // console.log("vertical: X: " + newX + " :: Y: inherit");
+            newX = "auto";
+            newY = fixed ? stageY + "px" :  "100%";
         }else{
-            this.content.style.width = newX;
-            this.content.style.height = newY;
+            //hit both
+            // console.log("both: X: inherit :: Y: inherit");
+            newX = "inherit";
+            newY = "inherit";
         }
 
+        this.content.style.width = newX;
+        this.content.style.height = newY;
     }
 
     isVideo() {

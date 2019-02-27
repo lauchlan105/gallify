@@ -5,9 +5,12 @@ class App {
         window.app = this;
 
         this.components = {};
-        this.media = [];
+        this.media = undefined;
         this.currentlyPlaying = undefined;
+        this.loading = true;
         this.settings = JSON.parse(json);
+
+        this.mediaLoaded = 0;
 
         /*
          *  INITIALIZE COMPONENTS
@@ -37,6 +40,7 @@ class App {
         objects.main = find("sfc-main");
         objects.stageParent = find("sfc-stage-parent");
         objects.stage = find("sfc-stage");
+        objects.loading = find("sfc-loading");
 
         //Stage
         objects.left = find("sfc-button-left");
@@ -131,6 +135,9 @@ class App {
      */
     fetchMedia() {
 
+        window.app.media = [];
+        window.app.mediaLoaded = 0;
+
         let fetchedMedia = getMedia();
 
         if (!fetchedMedia) {
@@ -152,10 +159,18 @@ class App {
 
         for (var i = 0; i < fetchedMedia.length; i++) {
             var temp = new Media(
-                this,
                 fetchedMedia[i].content,
                 fetchedMedia[i].thumbnail
             );
+
+            if(temp.isVideo()){
+                temp.content.addEventListener('canplaythrough', () => {
+                    window.app.mediaLoaded++;
+                });
+            }else{
+                window.app.mediaLoaded++;
+            }
+            
 
             this.media.push(temp);
         }
@@ -249,6 +264,7 @@ class App {
         components.counterIndex.style.fontSize = ui.counter.fontSize + "px";
 
         this.alignGallery();
+        this.components.app.style.display = "block";
     }
 
     /*
@@ -256,7 +272,7 @@ class App {
      */
     toggleApp(show) {
 
-        let app = this.components.app;
+        let app = this.components.main;
         if (show === true) {
             app.style.display = "block";
             document.body.style.overflow = "hidden";
@@ -269,17 +285,32 @@ class App {
 
         this.alignGallery();
 
-        console.log("app opened");
         if(show === true &&
             this.currentlyPlaying === undefined &&
             this.settings.app.autoPlay){
-                console.log("yeah yeah ");
-                this.playNext();
-        }else{
-            console.log(show);
-            console.log(this.currentlyPlaying);
+                window.app.toggleLoad(true);
+                runUntil(()=>{},()=>{
+                    if(window.app.media === undefined)
+                        return true;
+                    if(window.app.mediaLoaded < Math.ceil(window.app.media.length/3))
+                        return true;
+                    return false;
+                }, 10).finally(()=>{
+                    window.app.toggleLoad(false);
+                    window.app.playNext();
+                });
         }
 
+    }
+
+    toggleLoad(show){
+        if(show === true){
+            window.app.components.loading.style.display = "flex";
+        }else if(show === false){
+            window.app.components.loading.style.display = "none";
+        }else{
+            window.app.toggleLoad(window.app.components.loading.style.display === "none");
+        }
     }
 
     /*
@@ -295,18 +326,20 @@ class App {
         //Finally sets the media dimensions to a pixel
         //value rather than 100% or inherit
         function refresh() {
+            if (window.app.currentlyPlaying !== undefined)
+                        window.app.currentlyPlaying.refreshSize();
             runUntil(
                 //callback
                 () => {
                     if (window.app.currentlyPlaying !== undefined)
-                    window.app.currentlyPlaying.refreshSize();
+                        window.app.currentlyPlaying.refreshSize();
                 },
                 //condition
                 () => {
                     return window.app.components.gallery.transitioning;
                 },
                 //delay & finally
-                50).finally(
+                10).finally(
                 () => {
                     if (window.app.currentlyPlaying !== undefined)
                         window.app.currentlyPlaying.refreshSize(true);
@@ -353,7 +386,7 @@ class App {
         }
 
         //set alignTo to first unhidden item if alignTo is still undefined
-        if (alignTo === undefined) {
+        if (alignTo === undefined && window.app.media !== undefined) {
             //align to first media
             for (let i = 0; i < this.media.length; i++) {
                 if (!this.media[i].thumbnail.hidden) {
@@ -400,16 +433,20 @@ class App {
      * play shows and plays the parsed media
      */
     play(media) {
-
         var stage = this.components.stage;
 
         if (this.currentlyPlaying) {
             this.currentlyPlaying.deselect();
 
             //Remove currently playing
-            stage.removeChild(
-                this.currentlyPlaying.content
-            );
+            try{
+                stage.removeChild(
+                    this.currentlyPlaying.content
+                );
+            }catch(err){
+                console.log(err);
+            };
+            
 
             this.currentlyPlaying = undefined;
         }
@@ -419,6 +456,19 @@ class App {
             this.currentlyPlaying = media;
             this.currentlyPlaying.select();
             stage.appendChild(media.content);
+            var p = this.previous();
+            var n = this.next();
+
+            if(p !== undefined){
+                if(p.isVideo())
+                    p.content.load();
+            }
+            
+            if(n !== undefined){
+                if(n.isVideo())
+                n.content.load();
+            }
+
         } else if (media !== undefined) {
             console.log("Invalid media:");
             console.log(media);
@@ -496,7 +546,6 @@ class App {
         }
     }
     playNext() {
-        console.log(this.next());
         this.play(this.next());
     }
 

@@ -20,7 +20,7 @@ function whichTransitionEvent(){
 }
 
 /**
- * Runs the specefied callback function until 
+ * Runs the specified callback function until 
  * the condition function returns false
  * @param {Function} callback 
  * @param {Function} condition 

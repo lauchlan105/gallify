@@ -3,7 +3,9 @@ chrome.runtime.onMessage.addListener(
         switch (request.function) {
             case "getFile":
                 getFile(request.args).then(function (response) {
-                    sendResponse({ message: response.response });
+                    sendResponse({
+                        message: response.response
+                    });
                 });
                 return true;
                 break;
@@ -15,7 +17,9 @@ chrome.runtime.onMessage.addListener(
 );
 
 function sendMessage(message, recipient) {
-    chrome.tabs.sendMessage(recipient.tab.id, { response: message }, function(){});
+    chrome.tabs.sendMessage(recipient.tab.id, {
+        response: message
+    }, function () {});
 }
 
 console.log(chrome.extension.getViews());

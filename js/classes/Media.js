@@ -22,22 +22,21 @@ class Media {
         /*
          * Create and assign content
          */
-        let element;
 
         //Create content's DOM element
         switch (this.type) {
             case ".jpg":
             case ".png":
             case ".gif":
-                element = document.createElement("img");
+                this.content = document.createElement("img");
                 break;
 
             case ".webm":
             case ".mp4":
             case ".gifv":
-                element = document.createElement("video");
-                element.preload = "auto";
-                element.controls = app.settings.webm.controls;
+                this.content = document.createElement("video");
+                this.content.preload = "auto";
+                this.content.controls = app.settings.video.controls;
                 break;
 
             default:
@@ -47,28 +46,15 @@ class Media {
                 break;
         }
 
-        element.id = "sfc-now-playing";
-        element.src = content;
+        this.content.id = "sfc-now-playing";
+        this.content.src = content;
 
-        this.content = element;
-
+        //Get duration
         if(this.isVideo()){
-            var el = document.createElement("video");
-            el.src = element.src;
-            el.preload = "auto";
-            el.id = element.src;
+            
+        }else if(this.isPicture()){
 
-            document.body.appendChild(el);
-            function test(el){
-                this.vidX = el.clientWidth;
-                this.vidY = el.clientHeight;
-                document.body.removeChild(el);
-            }
-
-            el.addEventListener('loadeddata', function(e){
-                test = test.bind(this);
-                test(e.target);
-            }.bind(this));
+        }else if(this.isGif()){
         }
 
         /*
@@ -81,64 +67,84 @@ class Media {
         image.className = "sfc-thumbnail";
 
         //Create surrounding table cell
-        var tableData = document.createElement("td");
-        tableData.appendChild(image);
-
-        var obj = this;
-
-        tableData.onclick = function (event) {
-            window.app.play(obj);
-        };
-
-        this.thumbnail = tableData;
+        this.thumbnail = document.createElement("td");
+        this.thumbnail.appendChild(image);
 
         /*
          * Events
          */
         this.content.addEventListener('ended', this.onEnd.bind(this));
-
+        this.thumbnail.addEventListener('click', function(){
+            window.app.play(this);
+        }.bind(this));
         this.content.addEventListener('loadeddata', function(){
-            document.body.appendChild(this.content);
             this.vidX = this.content.clientWidth;
             this.vidY = this.content.clientHeight;
-            document.body.removeChild(this.content);
         }.bind(this));
 
     }
 
     select() {
+        this.refreshSize(true);
+        
         this.thumbnail.children[0].style.border = "2px solid white";
         this.thumbnail.children[0].style.opacity = "1";
-        this.onSelect();
+        
+        //Restart content according to settings
+        if(this.isVideo()){
+            if(window.app.settings.video.restartOnSelect)
+                this.content.currentTime = 0;
+        }else if(this.isGif()){
+            if(window.app.settings.gif.restartOnSelect)
+                this.timer.cancel();
+        }else if(this.isPicture()){
+            if(window.app.settings.picture.restartOnSelect)
+                this.timer.cancel();
+        }
+
+        
+            
+        if(window.app.settings.video.autoStart)
+            this.play();
     }
 
     deselect() {
         this.thumbnail.children[0].style.border = "2px solid transparent";
         this.thumbnail.children[0].style.opacity = window.app.settings.ui.gallery.thumbnailOpacity;
+        this.pause();
     }
 
     play(){ 
         if(this.content){
             if(this.isVideo()){
-                var videoSettings = window.app.settings.webm;
+                var videoSettings = window.app.settings.video;
                 var volume = videoSettings.sound ? videoSettings.defaultVolume : 0;
                 this.content.volume = volume;
                 this.content.play();
+            }else if(this.isGif()){
+                if(this.timer === undefined || this.timer.complete){
+                    this.timer = new Timer(this.onEnd.bind(this), window.app.settings.gif.duration);
+                }else{
+                    this.timer.resume();
+                }
+            }else if (this.isPicture()){
+                if(this.timer === undefined || this.timer.complete){
+                    this.timer = new Timer(this.onEnd.bind(this), window.app.settings.gif.duration);
+                }else{
+                    this.timer.resume();
+                }
             }
         }
     }
 
     pause(){
-        if(this.content)
-            this.content.pause();
-    }
-
-    onSelect(){
-        this.refreshSize(true);
-        if(window.app.settings.webm.restartOnSelect)
-            this.content.currentTime = 0;
-        if(window.app.settings.webm.autoStart)
-            this.play();
+        if(this.content){
+            if((this.isGif() || this.isPicture) && this.timer)
+                this.timer.pause();
+            if(this.isVideo())
+                this.content.pause();
+        }
+            
     }
 
     onDeselect(){ 
@@ -150,34 +156,40 @@ class Media {
     }
 
     onEnd() {
+
+        console.log(this);
+
+        var endCase = 4; //do nothing by default
+
         if(this.isVideo()){
-            switch(window.app.settings.webm.onend){
-                case 1:
-                    //previous
-                    window.app.playPrevious();
-                    break;
-                case 2:
-                    //thank you next
-                    window.app.playNext();
-                    break;
-                case 3:
-                    //loop
-                    this.select();
-                    break;
-                case 4:
-                    //nothing
-                    break;
-                case 5:
-                    //exit
-                    window.app.play();
-                    window.app.toggleApp(false);
-                    break;
-            }
-            console.log(this.playCount);
+            endCase = window.app.settings.video.onend
         }else if(this.isGif()){
-
+            endCase = window.app.settings.gif.onend
         }else if(this.isPicture()){
+            endCase = window.app.settings.picture.onend
+        }
 
+        switch(endCase){
+            case 1:
+                //previous
+                window.app.playPrevious();
+                break;
+            case 2:
+                //thank you next
+                window.app.playNext();
+                break;
+            case 3:
+                //loop
+                this.select();
+                break;
+            case 4:
+                //nothing
+                break;
+            case 5:
+                //exit
+                window.app.play();
+                window.app.toggleApp(false);
+                break;
         }
     }
 
@@ -248,7 +260,7 @@ class Media {
             case '.webm':
             case '.mp4':
             case '.gifv':
-                return window.app.settings.webm.include
+                return window.app.settings.video.include
                 break;
             case '.jpg':
             case '.png':

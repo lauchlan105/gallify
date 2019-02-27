@@ -18,10 +18,11 @@
             ],
             "js": [
                 "js/data collection/4chan.js",
-                "js/util.js",
                 "js/interface.js",
+                "js/util.js",
                 "js/classes/App.js",
-                "js/classes/Media.js"
+                "js/classes/Media.js",
+                "js/classes/Timer.js"
             ]
         }
     ],

@@ -38,22 +38,27 @@
 
     "gif": {
         "include": true,
-        "autoStart": true
+        "autoStart": true,
+        "restartOnSelect": false,
+        "duration": 10000,
+        "onend": 2
     },
 
-    "webm": {
+    "video": {
         "include": true,
         "controls": true,
         "autoStart": true,
         "restartOnSelect": true,
         "sound": true,
-        "defaultVolume": 1,
+        "defaultVolume": 0.2,
         "onend": 2
     },
 
     "picture": {
         "include": true,
-        "onend": 5
+        "restartOnSelect": true,
+        "duration": 10000,
+        "onend": 2
     }
 
 }

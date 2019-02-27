@@ -80,7 +80,6 @@ class Media {
         this.content.addEventListener('ended', this.onEnd.bind(this));
 
         this.content.addEventListener('loadeddata', function(){
-            console.log("measuring");
             if(this.vidX === undefined || this.vidY === undefined){
                 document.body.appendChild(this.content);
                 this.vidX = this.content.clientWidth;
@@ -103,8 +102,10 @@ class Media {
     }
 
     play(){ 
-        if(this.content)
-            this.content.play();
+        if(this.content){
+            if(this.isVideo())
+                this.content.play();
+        }
     }
 
     pause(){
@@ -113,7 +114,7 @@ class Media {
     }
 
     onSelect(){
-        this.refreshSize();
+        this.refreshSize(true);
         if(window.app.settings.webm.restartOnSelect)
             this.content.currentTime = 0;
         if(window.app.settings.webm.autoStart)
@@ -129,7 +130,6 @@ class Media {
     }
 
     onEnd() {
-        console.log("ended");
         if(this.isVideo()){
             switch(window.app.settings.webm.onend){
                 case 1:
@@ -153,6 +153,7 @@ class Media {
                     window.app.toggleApp(false);
                     break;
             }
+            console.log(this.playCount);
         }else if(this.isGif()){
 
         }else if(this.isPicture()){
@@ -160,7 +161,7 @@ class Media {
         }
     }
 
-    refreshSize(){
+    refreshSize(fixed){
         var vidX = this.vidX;
         var vidY = this.vidY;
         var stageX = window.app.components.stage.clientWidth;
@@ -173,15 +174,18 @@ class Media {
         var vidRatio = vidX/vidY;
         var stageRatio = stageX/stageY;
 
+        var newX = fixed ? stageX + "px" : "inherit";
+        var newY = fixed ? stageY + "px" : "inherit";
+
         if(vidRatio > stageRatio){
             this.content.style.height = "";
-            this.content.style.width = "inherit";
+            this.content.style.width = newX;
         }else if(vidRatio < stageRatio){
             this.content.style.width = "";
-            this.content.style.height = "inherit";
+            this.content.style.height = newY;
         }else{
-            this.content.style.width = "inherit";
-            this.content.style.height = "inherit";
+            this.content.style.width = newX;
+            this.content.style.height = newY;
         }
 
     }

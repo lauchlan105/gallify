@@ -5,16 +5,20 @@ function getMedia(){
 
     for(var i = 0; i < allContainers.length; i++){
 
-        var currCont = allContainers[i];
+        var currentCont = allContainers[i];
+
+        if(currentCont.href == "" || currentCont.href === undefined)
+            continue;
+
         var tempMedia = {};
 
         //Media url
-        tempMedia.content = currCont.href;
+        tempMedia.content = currentCont.href;
 
         //Loop children in search for img container
-        for(var j = 0; j < currCont.children.length; j++){
-            if(currCont.children[j].tagName.toUpperCase() === "IMG")
-                tempMedia.thumbnail = currCont.children[j].src;
+        for(var j = 0; j < currentCont.children.length; j++){
+            if(currentCont.children[j].tagName.toUpperCase() === "IMG")
+                tempMedia.thumbnail = currentCont.children[j].src;
         }
 
         allMedia.push(tempMedia);

@@ -27,7 +27,12 @@ function whichTransitionEvent(){
  */
 var exampleFunc = function(){ console.error("Error: runUntil used without a function to run"); };
 async function runUntil(callback = exampleFunc, condition = false, delay = 50){
-    callback();
-    if(condition())
-        setTimeout(() => { runUntil(callback, condition); }, delay);
+    return new Promise(async function(resolve, reject){
+        callback();
+        if(condition()){
+            await new Promise((r, j)=>setTimeout(r, delay));
+            await runUntil(callback, condition);
+        }
+        resolve();
+    });
 };

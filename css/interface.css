@@ -95,6 +95,16 @@
     /* background-color: rgba(145,145,145, 0.4) */
 }
 
+#sfc-loading {
+    background-image: url("/resources/images/loading.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90%;
+    padding: 50px;
+    height: 100px;
+    width: 100px;
+}
+
 #sfc-now-playing  {
     margin: auto;
     max-width: 100%;

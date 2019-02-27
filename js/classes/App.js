@@ -88,39 +88,40 @@ class App {
          * Gallery transition ending halts events that need to loop
          * while the gallery is moving (see toggleGallery)
          */
-        this.components.gallery.addEventListener(whichTransitionEvent(), function(){
+        this.components.gallery.addEventListener(whichTransitionEvent(), function () {
             window.app.components.gallery.transitioning = false;
         });
 
         //Buttons
         this.components.galleryButton.onclick = this.toggleGallery.bind(this);
-        this.components.left.addEventListener('click', function(e){
+        this.components.left.addEventListener('click', function (e) {
             window.app.playPrevious();
         });
-        this.components.right.addEventListener('click', function(e){
+        this.components.right.addEventListener('click', function (e) {
             window.app.playNext();
         });
 
         //Events to close app by clicking background
-        this.components.stage.addEventListener('click', function(e){
-            if(e.target === window.app.components.stage)
+        this.components.stage.addEventListener('click', function (e) {
+            if (e.target === window.app.components.stage)
                 window.app.toggleApp(false);
         });
-        this.components.stageParent.addEventListener('click', function(e){
-            if(e.target === window.app.components.stageParent)
-                window.app.toggleApp(false);
+        this.components.stageParent.addEventListener('click', function (e) {
+            if (e.target === window.app.components.stageParent)
+            window.app.toggleApp(false);
         });
-        this.components.gallerySlider.addEventListener('click', function(e){
-            if(e.target === window.app.components.gallerySlider)
-                window.app.toggleApp(false);
+        this.components.gallerySlider.addEventListener('click', function (e) {
+            if (e.target === window.app.components.gallerySlider)
+            window.app.toggleApp(false);
         });
 
-        window.onclick = function(e){
+        window.onclick = function (e) {
             // console.log(e.target);
         }
 
-        if(this.settings.app.openOnStart)
-            window.app.toggleApp(true);
+        if (this.settings.app.openOnStart){
+            this.toggleApp(true);
+        }
 
     }
 
@@ -196,7 +197,7 @@ class App {
 
         /*
          * Stage
-         */ 
+         */
         var r = ui.stage.color.r;
         var g = ui.stage.color.g;
         var b = ui.stage.color.b;
@@ -211,12 +212,12 @@ class App {
         /* 
          * Gallery
          */
-        var halfGalleryHeight = (thumbnailHeight/2) + thumbnailBorder + thumbnailSpacing;
-        components.galleryButton.style.bottom = halfGalleryHeight - (buttonSize/2)+ "px";
+        var halfGalleryHeight = (thumbnailHeight / 2) + thumbnailBorder + thumbnailSpacing;
+        components.galleryButton.style.bottom = halfGalleryHeight - (buttonSize / 2) + "px";
 
         /*
          * Gallery thumbnails
-          */
+         */
         var elems = document.getElementsByClassName("sfc-thumbnail");
         for (let i = 0; i < elems.length; i++) {
             elems[i].style.height = thumbnailHeight + "px";
@@ -228,9 +229,9 @@ class App {
         /*
          * Gallery curtains
          */
-        components.galleryCurtain.left.style.background  = color;
-        components.galleryCurtain.left.style.background  = "-webkit-linear-gradient(to right, " + color + " -20%, transparent)";
-        components.galleryCurtain.left.style.background  = "linear-gradient(to right, " + color + " -20%, transparent)";
+        components.galleryCurtain.left.style.background = color;
+        components.galleryCurtain.left.style.background = "-webkit-linear-gradient(to right, " + color + " -20%, transparent)";
+        components.galleryCurtain.left.style.background = "linear-gradient(to right, " + color + " -20%, transparent)";
         components.galleryCurtain.right.style.background = color;
         components.galleryCurtain.right.style.background = "-webkit-linear-gradient(to right, " + color + " -20%, transparent)";
         components.galleryCurtain.right.style.background = "linear-gradient(to right, " + color + " -20%, transparent)";
@@ -267,6 +268,18 @@ class App {
         }
 
         this.alignGallery();
+
+        console.log("app opened");
+        if(show === true &&
+            this.currentlyPlaying === undefined &&
+            this.settings.app.autoPlay){
+                console.log("yeah yeah ");
+                this.playNext();
+        }else{
+            console.log(show);
+            console.log(this.currentlyPlaying);
+        }
+
     }
 
     /*
@@ -277,31 +290,37 @@ class App {
         let settings = this.settings.ui.gallery;
         let base = this.settings.ui.size; //base ui size
 
-        //Uses runUntil util function
-        //to run callback() until condition is false.
-        //gallery.trainsitioning is set by transitionend event
-        function refresh(){
-            
-            var callback = function(){
-                console.log("refreshing");
-                if(window.app.currentlyPlaying !== undefined)
+        //Runs the callback function till the condition
+        //returns false with a delay specified as such.
+        //Finally sets the media dimensions to a pixel
+        //value rather than 100% or inherit
+        function refresh() {
+            runUntil(
+                //callback
+                () => {
+                    if (window.app.currentlyPlaying !== undefined)
                     window.app.currentlyPlaying.refreshSize();
-            };
-
-            var condition = function(){
-                return window.app.components.gallery.transitioning;
-            };
-
-            runUntil(callback, condition, 50);
+                },
+                //condition
+                () => {
+                    return window.app.components.gallery.transitioning;
+                },
+                //delay & finally
+                50).finally(
+                () => {
+                    if (window.app.currentlyPlaying !== undefined)
+                        window.app.currentlyPlaying.refreshSize(true);
+                }
+            );
         }
 
         if (show === true) { //Show gallery
 
             let showingHeight = (base * settings.thumbnailHeight) +
-                                (base * settings.thumbnailBorder*2) +
-                                (base * settings.thumbnailSpacing*2);
+                (base * settings.thumbnailBorder * 2) +
+                (base * settings.thumbnailSpacing * 2);
             gallery.style.height = showingHeight + "px";
-            
+
             gallery.transitioning = true;
             refresh();
 
@@ -382,13 +401,9 @@ class App {
      */
     play(media) {
 
-        console.log("playing...");
-        console.log(media);
-
         var stage = this.components.stage;
 
         if (this.currentlyPlaying) {
-            console.log(this.currentlyPlaying);
             this.currentlyPlaying.deselect();
 
             //Remove currently playing
@@ -404,7 +419,7 @@ class App {
             this.currentlyPlaying = media;
             this.currentlyPlaying.select();
             stage.appendChild(media.content);
-        } else if (media !== undefined){
+        } else if (media !== undefined) {
             console.log("Invalid media:");
             console.log(media);
             console.log("");
@@ -426,60 +441,63 @@ class App {
             index = this.currentlyPlaying.index;
 
         index--; //start at the next media straight away
-        for(var i = index; i < this.media.length; i--){
+        for (var i = index; i < this.media.length; i--) {
 
             //This resets to the start/end of array if 
             //the option allows
-            if(this.settings.app.loopAtEnd){
+            if (this.settings.app.loopAtEnd) {
                 i += this.media.length;
                 i %= this.media.length;
             }
 
             distance++;
-            if(distance >= this.media.length){
+            if (distance >= this.media.length) {
                 return undefined;
             }
 
-            if(this.media[i].canPlay()){
+            if (this.media[i].canPlay()) {
                 return this.media[i];
             }
 
         }
     }
-    playPrevious(){ this.play(this.previous()); }
-    
+    playPrevious() {
+        this.play(this.previous());
+    }
+
     /*
      * next returns the next valid media object
      * based on user settings
      */
     next() {
-
-        var index = -1;
+        var index = this.media.length - 1;
         var distance = 0;
         if (this.currentlyPlaying)
             index = this.currentlyPlaying.index;
 
         index++; //start at the next media straight away
-        for(var i = index; i <= this.media.length; i++){
-
+        for (var i = index; i <= this.media.length; i++) {
             //This resets to the start/end of array if 
             //the option allows
-            if(this.settings.app.loopAtEnd){
+            if (this.settings.app.loopAtEnd) {
                 i += this.media.length;
                 i %= this.media.length;
             }
 
-            distance++;
-            if(distance >= this.media.length){
+            if (distance >= this.media.length) {
                 return undefined;
             }
+            distance++;
 
-            if(this.media[i].canPlay()){
+            if (this.media[i].canPlay()) {
                 return this.media[i];
             }
 
         }
     }
-    playNext(){ this.play(this.next()); }
+    playNext() {
+        console.log(this.next());
+        this.play(this.next());
+    }
 
 }

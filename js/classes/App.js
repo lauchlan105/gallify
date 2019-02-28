@@ -261,7 +261,7 @@ class App {
         components.counterTotal.style.fontSize = ui.counter.fontSize + "px";
         components.counterIndex.style.fontSize = ui.counter.fontSize + "px";
 
-        this.alignGallery();
+        this.refreshGallery();
         this.components.app.style.display = "block";
     }
 
@@ -409,6 +409,27 @@ class App {
         offset = windowCenter - offset;
         this.components.galleryTable.offset = offset;
         this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
+    }
+
+    refreshGallery(){
+        var allMedia = window.app.media;
+        if(allMedia){
+            for(var i in allMedia){
+                var media = allMedia[i];
+
+                try{
+                    window.app.components.galleryTableRow.removeChild(media.thumbnail);
+                }catch(err){}
+
+                if(media.canPlay()){
+                    //make sure its in the gallery
+                    window.app.components.galleryTableRow.appendChild(media.thumbnail);
+                }else{
+                    //remove from gallery
+                }
+            }
+        }
+        this.alignGallery();
     }
 
     /*

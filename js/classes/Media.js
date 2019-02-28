@@ -48,6 +48,13 @@ class Media {
 
         this.content.id = "sfc-now-playing";
         this.content.src = content;
+        if(this.isVideo()){
+            this.content.style.visibility = "hidden";
+            this.content.style.transform = "translate(200vw, 200vh)";
+            this.content.style.position = "absolute";
+        }else{
+            this.content.style.display = "none";
+        }
 
         //Get duration
         if(this.isVideo()){
@@ -78,8 +85,21 @@ class Media {
             window.app.play(this);
         }.bind(this));
         this.content.addEventListener('loadeddata', function(){
-            this.vidX = this.content.clientWidth;
-            this.vidY = this.content.clientHeight;
+            var validX = this.vidX !== 0 && this.vidX !== undefined;
+            var validY = this.vidY !== 0 && this.vidY !== undefined;
+
+            if(!validX)
+                this.vidX = this.content.clientWidth;
+            if(!validY)
+                this.vidY = this.content.clientHeight;
+
+            //Make sure to set styles if they haven't been set yet
+            if(this.content.style.visibility === "hidden"){
+                this.content.style.display = "none";
+                this.content.style.visibility = "initial";
+                this.content.style.transform = "translate(0px, 0px)";
+                this.content.style.position = "initial";
+            }
         }.bind(this));
 
     }
@@ -87,6 +107,7 @@ class Media {
     select() {
         this.refreshSize(true);
         
+        this.content.style.display = "block";
         this.thumbnail.children[0].style.border = "2px solid white";
         this.thumbnail.children[0].style.opacity = "1";
         
@@ -109,6 +130,7 @@ class Media {
     }
 
     deselect() {
+        this.content.style.display = "none";
         this.thumbnail.children[0].style.border = "2px solid transparent";
         this.thumbnail.children[0].style.opacity = window.app.settings.ui.gallery.thumbnailOpacity;
         this.pause();
@@ -197,6 +219,8 @@ class Media {
         fixed = fixed === true ? true : false;
         var vidX = this.vidX;
         var vidY = this.vidY;
+
+        console.log(vidX+":"+vidY);
         var stageX = window.app.components.stage.clientWidth;
         var stageY = window.app.components.stage.clientHeight;
 

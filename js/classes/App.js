@@ -173,10 +173,8 @@ class App {
             
 
             this.media.push(temp);
-        }
-
-        for (let i = 0; i < this.media.length; i++) {
-            this.components.galleryTableRow.appendChild(this.media[i].thumbnail);
+            window.app.components.galleryTableRow.appendChild(temp.thumbnail);
+            window.app.components.stage.appendChild(temp.content);
         }
 
         return true;
@@ -437,17 +435,6 @@ class App {
 
         if (this.currentlyPlaying) {
             this.currentlyPlaying.deselect();
-
-            //Remove currently playing
-            try{
-                stage.removeChild(
-                    this.currentlyPlaying.content
-                );
-            }catch(err){
-                console.log(err);
-            };
-            
-
             this.currentlyPlaying = undefined;
         }
 

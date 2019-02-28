@@ -49,7 +49,7 @@
         "controls": true,
         "autoStart": true,
         "restartOnSelect": true,
-        "sound": true,
+        "sound": false,
         "defaultVolume": 0.2,
         "onend": 2
     },

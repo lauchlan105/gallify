@@ -10,7 +10,17 @@ class App {
         this.loading = true;
         this.settings = JSON.parse(json);
 
-        this.mediaLoaded = 0;
+        this.mediaLoaded = {};
+        this.mediaLoaded.gif = 0;
+        this.mediaLoaded.video = 0;
+        this.mediaLoaded.picture = 0;
+
+        this.mediaToLoad = {};
+        this.mediaToLoad.gif = 0;
+        this.mediaToLoad.video = 0;
+        this.mediaToLoad.picture = 0;
+
+        this.randomQueue = [];
 
         /*
          *  INITIALIZE COMPONENTS
@@ -112,18 +122,44 @@ class App {
         });
         this.components.stageParent.addEventListener('click', function (e) {
             if (e.target === window.app.components.stageParent)
-            window.app.toggleApp(false);
+                window.app.toggleApp(false);
         });
         this.components.gallerySlider.addEventListener('click', function (e) {
             if (e.target === window.app.components.gallerySlider)
-            window.app.toggleApp(false);
+                window.app.toggleApp(false);
         });
 
-        window.onclick = function (e) {
-            // console.log(e.target);
-        }
+        window.onkeyup = function (e) {
+            switch (e.keyCode) {
+                case 32: //space
+                    window.app.settings.video.include = !window.app.settings.video.include;
+                    window.app.applySettings();
+                    break;
+                case 82: //R
+                    (function () {
+                        var validX = this.vidX !== 0 && this.vidX !== undefined;
+                        var validY = this.vidY !== 0 && this.vidY !== undefined;
 
-        if (this.settings.app.openOnStart){
+                        if (!validX)
+                            this.vidX = this.content.clientWidth;
+                        if (!validY)
+                            this.vidY = this.content.clientHeight;
+
+                        //Make sure to set styles if they haven't been set yet
+                        var currentlyPlaying = window.app.currentlyPlaying === this;
+                        this.content.style.display = currentlyPlaying ? "initial" : "none";
+                        this.content.style.visibility = "initial";
+                        this.content.style.transform = "translate(0px, 0px)";
+                        this.content.style.position = "initial";
+                    }).bind(window.app.currentlyPlaying)();
+                    break;
+                case 69:
+                    window.app.alignGallery();
+                    break;
+            }
+        };
+
+        if (this.settings.app.openOnStart) {
             this.toggleApp(true);
         }
 
@@ -136,7 +172,6 @@ class App {
     fetchMedia() {
 
         window.app.media = [];
-        window.app.mediaLoaded = 0;
 
         let fetchedMedia = getMedia();
 
@@ -163,14 +198,19 @@ class App {
                 fetchedMedia[i].thumbnail
             );
 
-            if(temp.isVideo()){
-                temp.content.addEventListener('canplaythrough', () => {
-                    window.app.mediaLoaded++;
+            if (temp.isVideo()) {
+                window.app.mediaToLoad.video++;
+                temp.content.addEventListener('loadeddata', () => {
+                    window.app.mediaLoaded.video++;
                 });
-            }else{
-                window.app.mediaLoaded++;
+            } else if (temp.isGif()) {
+                window.app.mediaToLoad.gif++;
+                window.app.mediaLoaded.gif++;
+            } else if (temp.isPicture()) {
+                window.app.mediaToLoad.picture++;
+                window.app.mediaLoaded.picture++;
             }
-            
+
 
             this.media.push(temp);
             window.app.components.galleryTableRow.appendChild(temp.thumbnail);
@@ -178,6 +218,44 @@ class App {
         }
 
         return true;
+    }
+
+    waitForMedia() {
+        return new Promise(async function (resolve, reject) {
+            var wasPlaying = window.app.currentlyPlaying;
+            if (wasPlaying !== undefined) {
+                window.app.play();
+            }
+
+            if (wasPlaying !== undefined && !wasPlaying.canPlay())
+                wasPlaying = window.app.next(wasPlaying);
+
+            window.app.toggleLoad(true);
+
+            await runUntil(() => {}, () => {
+                if (window.app.media === undefined)
+                    return true;
+
+                var loaded = window.app.mediaLoaded;
+                var totalLoaded = loaded.gif + loaded.video + loaded.video;
+                var totalToLoad = 0;
+
+                if (window.app.settings.video.include)
+                    totalToLoad += window.app.mediaToLoad.video
+
+                if (window.app.settings.gif.include)
+                    totalToLoad += window.app.mediaToLoad.gif
+
+                if (window.app.settings.picture.include)
+                    totalToLoad += window.app.mediaToLoad.picture
+
+                return totalLoaded < totalToLoad * window.app.settings.app.percentageToLoad;
+            }, 50);
+
+            window.app.toggleLoad(false);
+            window.app.play(wasPlaying);
+            resolve();
+        });
     }
 
     /*
@@ -222,6 +300,18 @@ class App {
         components.main.style["-moz-box-shadow"] = "inset 0px 0px 89px 16px " + color;
         components.main.style["box-shadow"] = "inset 0px 0px 89px 16px " + color;
 
+        //set preload on videos if not all videos have been loaded
+        if (window.app.mediaLoaded.video < window.app.mediaToLoad.video) {
+            this.waitForMedia();
+            for (var i in window.app.media) {
+                var media = window.app.media[i];
+                if (media.isVideo() && media.canPlay()) {
+                    if (media.content.preload !== "auto")
+                        media.content.preload = "auto";
+                }
+            }
+        }
+
         /* 
          * Gallery
          */
@@ -261,8 +351,31 @@ class App {
         components.counterTotal.style.fontSize = ui.counter.fontSize + "px";
         components.counterIndex.style.fontSize = ui.counter.fontSize + "px";
 
+        this.resetRandomQueue();
         this.refreshGallery();
         this.components.app.style.display = "block";
+    }
+
+    resetRandomQueue() {
+
+        //reset randomIndex for all media
+        for (var i in this.media) {
+            var media = this.media[i];
+            media.randomIndex = -1;
+        }
+
+        //clear random queue
+        this.randomQueue = [];
+
+        //set randomIndex and push to queue if the
+        //random queue is being used
+        if(!this.settings.app.playRandom) {
+            if(this.currentlyPlaying) {
+                this.currentlyPlaying.randomIndex = this.randomQueue.length;
+                this.randomQueue.push(this.currentlyPlaying);
+            }
+        }
+
     }
 
     /*
@@ -283,30 +396,24 @@ class App {
 
         this.alignGallery();
 
-        if(show === true &&
+        if (show === true &&
             this.currentlyPlaying === undefined &&
-            this.settings.app.autoPlay){
-                window.app.toggleLoad(true);
-                runUntil(()=>{},()=>{
-                    if(window.app.media === undefined)
-                        return true;
-                    if(window.app.mediaLoaded < Math.ceil(window.app.media.length/3))
-                        return true;
-                    return false;
-                }, 10).finally(()=>{
-                    window.app.toggleLoad(false);
-                    window.app.playNext();
-                });
+            this.settings.app.autoPlay) {
+            this.waitForMedia().then(() => {
+                window.app.playNext();
+            });
         }
 
     }
 
-    toggleLoad(show){
-        if(show === true){
+    toggleLoad(show) {
+        if (show === true) {
             window.app.components.loading.style.display = "flex";
-        }else if(show === false){
+            window.app.loading = true;
+        } else if (show === false) {
             window.app.components.loading.style.display = "none";
-        }else{
+            window.app.loading = false;
+        } else {
             window.app.toggleLoad(window.app.components.loading.style.display === "none");
         }
     }
@@ -325,19 +432,16 @@ class App {
         //value rather than 100% or inherit
         function refresh() {
             if (window.app.currentlyPlaying !== undefined)
-                        window.app.currentlyPlaying.refreshSize();
+                window.app.currentlyPlaying.refreshSize();
             runUntil(
                 //callback
-                () => {
-                    if (window.app.currentlyPlaying !== undefined)
-                        window.app.currentlyPlaying.refreshSize();
-                },
+                () => {},
                 //condition
                 () => {
                     return window.app.components.gallery.transitioning;
                 },
                 //delay & finally
-                10).finally(
+                100).finally(
                 () => {
                     if (window.app.currentlyPlaying !== undefined)
                         window.app.currentlyPlaying.refreshSize(true);
@@ -411,22 +515,12 @@ class App {
         this.components.galleryTable.style.transform = "translateX(" + offset + "px)";
     }
 
-    refreshGallery(){
+    refreshGallery() {
         var allMedia = window.app.media;
-        if(allMedia){
-            for(var i in allMedia){
-                var media = allMedia[i];
-
-                try{
-                    window.app.components.galleryTableRow.removeChild(media.thumbnail);
-                }catch(err){}
-
-                if(media.canPlay()){
-                    //make sure its in the gallery
-                    window.app.components.galleryTableRow.appendChild(media.thumbnail);
-                }else{
-                    //remove from gallery
-                }
+        if (allMedia) {
+            for (var i in allMedia) {
+                //set thumbnail display to initial or none based on canPlay()
+                allMedia[i].thumbnail.hidden = !allMedia[i].canPlay();
             }
         }
         this.alignGallery();
@@ -452,50 +546,67 @@ class App {
      * play shows and plays the parsed media
      */
     play(media) {
-        var stage = this.components.stage;
 
+        if (window.app.loading)
+            return
+
+        var hasMedia = media !== undefined;
+
+        //error if media has been parsed and it is not a Media object
+        if (hasMedia && !(media instanceof Media)) {
+            console.error("Invalid media:");
+            console.error(media);
+            return;
+        }
+
+        //return if playing the same thing
+        if (hasMedia && media === this.currentlyPlaying)
+            return;
+
+        //deselect currentlyPlaying
         if (this.currentlyPlaying) {
             this.currentlyPlaying.deselect();
             this.currentlyPlaying = undefined;
         }
 
+        //return after deselecting if no media has been parsed
+        if (!hasMedia)
+            return;
+
+        var stage = this.components.stage;
+
         //Play media if parsed
-        if (media) {
-            this.currentlyPlaying = media;
-            this.currentlyPlaying.select();
-            stage.appendChild(media.content);
-            var p = this.previous();
-            var n = this.next();
+        this.currentlyPlaying = media;
+        this.currentlyPlaying.select();
+        stage.appendChild(media.content);
 
-            if(p !== undefined){
-                if(p.isVideo())
-                    p.content.load();
-            }
-            
-            if(n !== undefined){
-                if(n.isVideo())
-                n.content.load();
-            }
+        //Load previous and next content
+        var p = this.previous();
+        if (p !== undefined)
+            p.load();
 
-        } else if (media !== undefined) {
-            console.log("Invalid media:");
-            console.log(media);
-            console.log("");
-        }
+        var n = this.next();
+        if (n !== undefined)
+            n.load();
+
+        console.log(this.randomQueue);
 
         this.alignGallery();
-
     }
 
     /*
      * previous returns the previous valid media object
      * based on user settings
      */
-    previous() {
+    previous(media) {
 
-        var index = 0;
+        if (media !== undefined && !(media instanceof Media))
+            return this.currentlyPlaying;
+
+        var hasMedia = media !== undefined;
+        var index = hasMedia ? media.index : 0;
         var distance = 0;
-        if (this.currentlyPlaying)
+        if (this.currentlyPlaying !== undefined && !hasMedia)
             index = this.currentlyPlaying.index;
 
         index--; //start at the next media straight away
@@ -519,18 +630,19 @@ class App {
 
         }
     }
-    playPrevious() {
-        this.play(this.previous());
+    playPrevious(media) {
+        this.play(this.previous(media));
     }
 
     /*
      * next returns the next valid media object
      * based on user settings
      */
-    next() {
-        var index = this.media.length - 1;
+    next(media) {
+
+        var index = media === undefined ? this.media.length - 1 : media.index;
         var distance = 0;
-        if (this.currentlyPlaying)
+        if (this.currentlyPlaying && media === undefined)
             index = this.currentlyPlaying.index;
 
         index++; //start at the next media straight away
@@ -547,14 +659,49 @@ class App {
             }
             distance++;
 
-            if (this.media[i].canPlay()) {
-                return this.media[i];
+            var validIndex = 0 <= i && i <= window.app.media.length - 1;
+            if(validIndex){
+                if (this.media[i].canPlay())
+                    return this.media[i];
             }
 
         }
     }
-    playNext() {
-        this.play(this.next());
+    playNext(media) {
+        this.play(this.next(media));
+    }
+
+    random() {
+
+        if (window.app.media === undefined || window.app.media.length < 1)
+            return;
+
+        var output = undefined;
+        var min = 0;
+        var max = window.app.media.length - 1;
+
+        for (var i in window.app.media) {
+            var index = Math.random() * (max - min) + min;
+            index = Math.floor(index);
+            var media = window.app.media[index];
+
+            if (media === window.app.currentlyPlaying)
+                continue;
+
+            if (output === undefined) {
+                output = media;
+                continue;
+            }
+
+            if (output.playCount < media.playCount) {
+                output = media;
+                continue;
+            }
+
+        }
+
+        return output;
+
     }
 
 }

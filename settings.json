@@ -1,9 +1,11 @@
 {
 
     "app": {
-        "loopAtEnd": true,
+        "loopAtEnd": false,
         "autoPlay": true,
-        "openOnStart": true
+        "openOnStart": true,
+        "percentageToLoad": 0.4,
+        "playRandom": true
     },
 
     "ui": {
@@ -40,7 +42,7 @@
         "include": true,
         "autoStart": true,
         "restartOnSelect": false,
-        "duration": 10000,
+        "duration": 4000,
         "onend": 2
     },
 
@@ -49,15 +51,15 @@
         "controls": true,
         "autoStart": true,
         "restartOnSelect": true,
-        "sound": false,
-        "defaultVolume": 0.2,
+        "sound": true,
+        "defaultVolume": 0.1,
         "onend": 2
     },
 
     "picture": {
         "include": true,
         "restartOnSelect": true,
-        "duration": 10000,
+        "duration": 4000,
         "onend": 2
     }
 

@@ -3,6 +3,7 @@ class Media {
 
         this.playCount = 0;
         this.index = window.app.media.length;
+        this.randomIndex = -1; //used when random is turned on
 
         /*
          * Get and assign type (ie. gif, webm, mp4, etc.). 
@@ -35,7 +36,7 @@ class Media {
             case ".mp4":
             case ".gifv":
                 this.content = document.createElement("video");
-                this.content.preload = "auto";
+                this.content.preload = window.app.settings.video.include ? "auto" : "none";
                 this.content.controls = app.settings.video.controls;
                 break;
 
@@ -94,14 +95,18 @@ class Media {
                 this.vidY = this.content.clientHeight;
 
             //Make sure to set styles if they haven't been set yet
-            if(this.content.style.visibility === "hidden"){
-                this.content.style.display = "none";
-                this.content.style.visibility = "initial";
-                this.content.style.transform = "translate(0px, 0px)";
-                this.content.style.position = "initial";
-            }
+            var isCurrentlyPlaying = window.app.currentlyPlaying === this;
+            this.content.style.display = isCurrentlyPlaying ? "initial" : "none";
+            this.content.style.visibility = "initial";
+            this.content.style.transform = "translate(0px, 0px)";
+            this.content.style.position = "initial";
         }.bind(this));
 
+    }
+
+    load(){
+        // if(this.isVideo())
+            // this.content.load();
     }
 
     select() {
@@ -122,8 +127,6 @@ class Media {
             if(window.app.settings.picture.restartOnSelect)
                 this.timer.cancel();
         }
-
-        
             
         if(window.app.settings.video.autoStart)
             this.play();
@@ -166,7 +169,6 @@ class Media {
             if(this.isVideo())
                 this.content.pause();
         }
-            
     }
 
     onDeselect(){ 
@@ -179,9 +181,7 @@ class Media {
 
     onEnd() {
 
-        console.log(this);
-
-        var endCase = 4; //do nothing by default
+        var endCase;
 
         if(this.isVideo()){
             endCase = window.app.settings.video.onend
@@ -204,13 +204,13 @@ class Media {
                 //loop
                 this.select();
                 break;
-            case 4:
-                //nothing
-                break;
             case 5:
                 //exit
                 window.app.play();
                 window.app.toggleApp(false);
+                break;
+            default:
+                //do nothing
                 break;
         }
     }
@@ -220,7 +220,6 @@ class Media {
         var vidX = this.vidX;
         var vidY = this.vidY;
 
-        console.log(vidX+":"+vidY);
         var stageX = window.app.components.stage.clientWidth;
         var stageY = window.app.components.stage.clientHeight;
 
@@ -230,11 +229,6 @@ class Media {
 
         var vidRatio = vidX/vidY;
         var stageRatio = stageX/stageY;
-
-        // var newX = fixed ? stageX + "px" : "";
-        // var newY = fixed ? stageY + "px" : "";
-
-        // console.log(newX + ":" + newY);
 
         var newX = "inherit";
         var newY = "inherit";

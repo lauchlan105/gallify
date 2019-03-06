@@ -371,7 +371,7 @@ class App {
         //random queue is being used
         if(!this.settings.app.playRandom) {
             if(this.currentlyPlaying) {
-                this.currentlyPlaying.randomIndex = this.randomQueue.length;
+                this.currentlyPlaying.randomIndex = this.randomQueue.length - 1;
                 this.randomQueue.push(this.currentlyPlaying);
             }
         }
@@ -383,7 +383,8 @@ class App {
      */
     toggleApp(show) {
 
-        let app = this.components.main;
+        var app = this.components.main;
+        var autoStart = this.settings.app.autoStart;
         if (show === true) {
             app.style.display = "block";
             document.body.style.overflow = "hidden";
@@ -392,15 +393,15 @@ class App {
             document.body.style.overflow = "auto";
         } else {
             this.toggleApp(app.style.display !== "block");
+            return;
         }
 
         this.alignGallery();
 
-        if (show === true &&
-            this.currentlyPlaying === undefined &&
-            this.settings.app.autoPlay) {
+        if (autoStart && show === true &&
+            this.currentlyPlaying === undefined) {
             this.waitForMedia().then(() => {
-                window.app.playNext();
+                setTimeout(window.app.playNext.bind(window.app), 100);
             });
         }
 
@@ -551,6 +552,9 @@ class App {
             return
 
         var hasMedia = media !== undefined;
+        var random = this.settings.app.playRandom;
+        var stage = this.components.stage;
+        var wasPlaying = this.currentlyPlaying;
 
         //error if media has been parsed and it is not a Media object
         if (hasMedia && !(media instanceof Media)) {
@@ -560,7 +564,7 @@ class App {
         }
 
         //return if playing the same thing
-        if (hasMedia && media === this.currentlyPlaying)
+        if (media === this.currentlyPlaying)
             return;
 
         //deselect currentlyPlaying
@@ -573,24 +577,65 @@ class App {
         if (!hasMedia)
             return;
 
-        var stage = this.components.stage;
+        //add to randomQueue if needed
+        if(random){
+
+            //playingThroughQueue is set to true by default if the first item
+            //in the randomQueue is to be played.
+            var playingThroughQueue = wasPlaying === undefined && this.randomQueue.length > 0;
+            if(wasPlaying !== undefined && media.randomIndex !== -1){
+                //play through is true if the media to be played is adjacent
+                // in the array to what is currently playing
+                var prevOfCurrent = media.randomIndex === wasPlaying.randomIndex - 1;
+                var nextOfCurrent = media.randomIndex === wasPlaying.randomIndex + 1;
+                playingThroughQueue = prevOfCurrent || nextOfCurrent;
+            }
+            
+            //remove from queue first if it is there
+            if(!playingThroughQueue && this.randomQueue.includes(media)){
+
+                //filter media from randomQueue
+                this.randomQueue = this.randomQueue.filter(function(randomMedia){
+                    return randomMedia !== media;
+                });
+                
+                //reset randomIndex
+                for(var i in this.randomQueue){
+                    if(isNaN(i))
+                        continue;
+                    var i = parseInt(i);
+                    var randomMedia = this.randomQueue[i];
+                    randomMedia.randomIndex = i;
+                }
+
+            }
+
+            //set randomIndex and add to randomQueue
+            if(!playingThroughQueue){
+                media.randomIndex = this.randomQueue.length;
+                this.randomQueue.push(media);
+            }
+
+
+        }
+
 
         //Play media if parsed
         this.currentlyPlaying = media;
         this.currentlyPlaying.select();
         stage.appendChild(media.content);
 
-        //Load previous and next content
+        // Load previous and next content
         var p = this.previous();
         if (p !== undefined)
             p.load();
 
-        var n = this.next();
-        if (n !== undefined)
-            n.load();
-
-        console.log(this.randomQueue);
-
+        if(!window.app.settings.app.playRandom){
+            var n = this.next();
+            if (n !== undefined)
+                n.load();
+        }
+        
         this.alignGallery();
     }
 
@@ -600,24 +645,44 @@ class App {
      */
     previous(media) {
 
-        if (media !== undefined && !(media instanceof Media))
-            return this.currentlyPlaying;
+        if(media !== undefined && !(media instanceof Media)){
+            console.error("Error: can't get previous. Media was invalid");
+            console.error(media);
+            return undefined;
+        }
+
+        //return media from previous spot in randomQueue if random play is on
+        if(window.app.settings.app.playRandom){
+            
+            if(this.currentlyPlaying === undefined)
+                return undefined;
+
+            //if the current media is in the randomQueue, go backwards
+            var randomIndex = this.currentlyPlaying.randomIndex;
+            return randomIndex >= 1 ? this.randomQueue[randomIndex - 1] : undefined;
+
+        }
 
         var hasMedia = media !== undefined;
         var index = hasMedia ? media.index : 0;
         var distance = 0;
+
         if (this.currentlyPlaying !== undefined && !hasMedia)
             index = this.currentlyPlaying.index;
 
-        index--; //start at the next media straight away
+        index--; //start at the previous media straight away
         for (var i = index; i < this.media.length; i--) {
-
             //This resets to the start/end of array if 
             //the option allows
-            if (this.settings.app.loopAtEnd) {
-                i += this.media.length;
-                i %= this.media.length;
+
+            var looped = i < 0 || this.media.length <= i;
+            var shouldLoop = this.settings.app.loopAtEnd;
+            if(looped && !shouldLoop){
+                return undefined;
             }
+
+            i += this.media.length;
+            i %= this.media.length;
 
             distance++;
             if (distance >= this.media.length) {
@@ -640,6 +705,32 @@ class App {
      */
     next(media) {
 
+        if(media !== undefined && !(media instanceof Media)){
+            console.error("Error: can't get next. Media was invalid");
+            console.error(media);
+            return undefined;
+        }
+
+        if(window.app.settings.app.playRandom){
+
+            var randomQueueLength = this.randomQueue.length;
+
+            //if nothing is being played, play next in randomQueue, or if nothing -> random()
+            if(this.currentlyPlaying === undefined)
+                return randomQueueLength > 0 ? this.randomQueue[0] : this.random();
+
+            //if the current media is in the randomQueue, play next in queue or random()
+            var randomIndex = this.currentlyPlaying.randomIndex;
+            var inQueue = randomIndex !== -1;
+            var endOfQueue = randomIndex === randomQueueLength - 1;
+
+            if(inQueue && !endOfQueue)
+                return this.randomQueue[randomIndex + 1];
+
+            return this.random();
+
+        }
+
         var index = media === undefined ? this.media.length - 1 : media.index;
         var distance = 0;
         if (this.currentlyPlaying && media === undefined)
@@ -649,10 +740,15 @@ class App {
         for (var i = index; i <= this.media.length; i++) {
             //This resets to the start/end of array if 
             //the option allows
-            if (this.settings.app.loopAtEnd) {
-                i += this.media.length;
-                i %= this.media.length;
+
+            var looped = i < 0 || this.media.length <= i;
+            var shouldLoop = this.settings.app.loopAtEnd;
+            if(looped && !shouldLoop){
+                return undefined;
             }
+
+            i += this.media.length;
+            i %= this.media.length;
 
             if (distance >= this.media.length) {
                 return undefined;

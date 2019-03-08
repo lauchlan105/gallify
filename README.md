@@ -10,4 +10,6 @@ Gallify is a browser extension that can turn any page you want into a robust and
 6. Locate the extracted folder   _(Step 2)_
 7. Open a [4chan board](http://www.4chan.org/) and enjoy!
 
+### All settings can be found in the settings.json file. Eventually all settings will be done via a pretty settings panel, this is only temporary
+
 ###### Please keep in mind that this extension is in the early stages of development and as such errors may be present.

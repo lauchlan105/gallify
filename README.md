@@ -3,7 +3,7 @@ Gallify is a browser extension that can turn any page you want into a robust and
 
 ## How to install
 1. [Download](about:blank) this repository
-2. Open your [Chrome Extensions](chrome://extensions) tab
+2. Open your Chrome Extensions tab by going to `chrome://extensions`
 3. Enable **developer mode**
 4. Click on **Load unpacked** in the top right
 5. Locate the downloaded file and select it.

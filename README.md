@@ -2,7 +2,8 @@
 Gallify is a browser extension that can turn any page you want into a robust and easy to use gallery.
 
 ## How to install
-1. [Download](about:blank) this repository
+1. [Download](https://github.com/lauchlan105/gallify/archive/master.zip) this repository
+2. Locate the downloaded file and unzip it
 2. Open your Chrome Extensions tab by entering `chrome://extensions` in the URL bar
 3. Enable **developer mode**
 4. Click on **Load unpacked** in the top right

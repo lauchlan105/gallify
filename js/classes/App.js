@@ -107,7 +107,9 @@ class App {
         });
 
         //Buttons
-        this.components.galleryButton.onclick = this.toggleGallery.bind(this);
+        this.components.galleryButton.addEventListener('click', function (e) {
+            window.app.toggleGallery();
+        })
         this.components.left.addEventListener('click', function (e) {
             window.app.playPrevious();
         });
@@ -159,9 +161,7 @@ class App {
             }
         };
 
-        if (this.settings.app.openOnStart) {
-            this.toggleApp(true);
-        }
+        this.toggleApp(this.settings.app.openOnStart);
 
     }
 
@@ -194,6 +194,7 @@ class App {
 
         for (var i = 0; i < fetchedMedia.length; i++) {
             var temp = new Media(
+                this,
                 fetchedMedia[i].content,
                 fetchedMedia[i].thumbnail
             );
@@ -211,6 +212,9 @@ class App {
                 window.app.mediaLoaded.picture++;
             }
 
+            temp.count.gif = window.app.mediaToLoad.gif;
+            temp.count.picture = window.app.mediaToLoad.picture;
+            temp.count.video = window.app.mediaToLoad.video;
 
             this.media.push(temp);
             window.app.components.galleryTableRow.appendChild(temp.thumbnail);
@@ -256,6 +260,35 @@ class App {
             window.app.play(wasPlaying);
             resolve();
         });
+    }
+
+    refreshCounter() {
+        var index = " - ";
+        var total = " - ";
+
+        if (this.currentlyPlaying !== undefined && this.currentlyPlaying.canPlay()) {
+            index = 0;
+            if (this.settings.picture.include)
+                index += this.currentlyPlaying.count.picture;
+
+            if (this.settings.gif.include)
+                index += this.currentlyPlaying.count.gif;
+
+            if (this.settings.video.include)
+                index += this.currentlyPlaying.count.video;    
+        }
+
+        total = 0;
+        if (this.settings.picture.include)
+            total += this.mediaToLoad.picture;
+
+        if (this.settings.gif.include)
+            total += this.mediaToLoad.gif;
+
+        if (this.settings.video.include)
+            total += this.mediaToLoad.video;
+
+        window.app.components.counter.innerHTML = index + "/" + total;
     }
 
     /*
@@ -347,7 +380,8 @@ class App {
         }
 
         //counter
-        components.counter.style.fontSize = ui.counter.fontSize + "px";
+        console.log(ui.counter.fontSize * ui.base + "px");
+        components.counter.style.fontSize = ui.counter.fontSize * base + "px";
         components.counterTotal.style.fontSize = ui.counter.fontSize + "px";
         components.counterIndex.style.fontSize = ui.counter.fontSize + "px";
 
@@ -369,8 +403,8 @@ class App {
 
         //set randomIndex and push to queue if the
         //random queue is being used
-        if(!this.settings.app.playRandom) {
-            if(this.currentlyPlaying) {
+        if (!this.settings.app.playRandom) {
+            if (this.currentlyPlaying) {
                 this.currentlyPlaying.randomIndex = this.randomQueue.length - 1;
                 this.randomQueue.push(this.currentlyPlaying);
             }
@@ -391,6 +425,9 @@ class App {
         } else if (show === false) {
             app.style.display = "none";
             document.body.style.overflow = "auto";
+        } else if (show !== undefined) {
+            console.log(show);
+            return;
         } else {
             this.toggleApp(app.style.display !== "block");
             return;
@@ -414,6 +451,9 @@ class App {
         } else if (show === false) {
             window.app.components.loading.style.display = "none";
             window.app.loading = false;
+        } else if (show !== undefined) {
+            console.log(show);
+            return;
         } else {
             window.app.toggleLoad(window.app.components.loading.style.display === "none");
         }
@@ -464,6 +504,9 @@ class App {
             gallery.style.height = "0px";
             gallery.transitioning = true;
             refresh();
+        } else if (show !== undefined) {
+            console.log(show);
+            return;
         } else { //Hide if shown, show if hidden
             this.toggleGallery(gallery.style.height === "0px");
             return;
@@ -574,34 +617,36 @@ class App {
         }
 
         //return after deselecting if no media has been parsed
-        if (!hasMedia)
+        if (!hasMedia){
+            this.refreshCounter();
             return;
+        }
 
         //add to randomQueue if needed
-        if(random){
+        if (random) {
 
             //playingThroughQueue is set to true by default if the first item
             //in the randomQueue is to be played.
             var playingThroughQueue = wasPlaying === undefined && this.randomQueue.length > 0;
-            if(wasPlaying !== undefined && media.randomIndex !== -1){
+            if (wasPlaying !== undefined && media.randomIndex !== -1) {
                 //play through is true if the media to be played is adjacent
                 // in the array to what is currently playing
                 var prevOfCurrent = media.randomIndex === wasPlaying.randomIndex - 1;
                 var nextOfCurrent = media.randomIndex === wasPlaying.randomIndex + 1;
                 playingThroughQueue = prevOfCurrent || nextOfCurrent;
             }
-            
+
             //remove from queue first if it is there
-            if(!playingThroughQueue && this.randomQueue.includes(media)){
+            if (!playingThroughQueue && this.randomQueue.includes(media)) {
 
                 //filter media from randomQueue
-                this.randomQueue = this.randomQueue.filter(function(randomMedia){
+                this.randomQueue = this.randomQueue.filter(function (randomMedia) {
                     return randomMedia !== media;
                 });
-                
+
                 //reset randomIndex
-                for(var i in this.randomQueue){
-                    if(isNaN(i))
+                for (var i in this.randomQueue) {
+                    if (isNaN(i))
                         continue;
                     var i = parseInt(i);
                     var randomMedia = this.randomQueue[i];
@@ -611,7 +656,7 @@ class App {
             }
 
             //set randomIndex and add to randomQueue
-            if(!playingThroughQueue){
+            if (!playingThroughQueue) {
                 media.randomIndex = this.randomQueue.length;
                 this.randomQueue.push(media);
             }
@@ -630,13 +675,14 @@ class App {
         if (p !== undefined)
             p.load();
 
-        if(!window.app.settings.app.playRandom){
+        if (!window.app.settings.app.playRandom) {
             var n = this.next();
             if (n !== undefined)
                 n.load();
         }
-        
+
         this.alignGallery();
+        this.refreshCounter();
     }
 
     /*
@@ -645,16 +691,16 @@ class App {
      */
     previous(media) {
 
-        if(media !== undefined && !(media instanceof Media)){
+        if (media !== undefined && !(media instanceof Media)) {
             console.error("Error: can't get previous. Media was invalid");
             console.error(media);
             return undefined;
         }
 
         //return media from previous spot in randomQueue if random play is on
-        if(window.app.settings.app.playRandom){
-            
-            if(this.currentlyPlaying === undefined)
+        if (window.app.settings.app.playRandom) {
+
+            if (this.currentlyPlaying === undefined)
                 return undefined;
 
             //if the current media is in the randomQueue, go backwards
@@ -677,7 +723,7 @@ class App {
 
             var looped = i < 0 || this.media.length <= i;
             var shouldLoop = this.settings.app.loopAtEnd;
-            if(looped && !shouldLoop){
+            if (looped && !shouldLoop) {
                 return undefined;
             }
 
@@ -705,18 +751,18 @@ class App {
      */
     next(media) {
 
-        if(media !== undefined && !(media instanceof Media)){
+        if (media !== undefined && !(media instanceof Media)) {
             console.error("Error: can't get next. Media was invalid");
             console.error(media);
             return undefined;
         }
 
-        if(window.app.settings.app.playRandom){
+        if (window.app.settings.app.playRandom) {
 
             var randomQueueLength = this.randomQueue.length;
 
             //if nothing is being played, play next in randomQueue, or if nothing -> random()
-            if(this.currentlyPlaying === undefined)
+            if (this.currentlyPlaying === undefined)
                 return randomQueueLength > 0 ? this.randomQueue[0] : this.random();
 
             //if the current media is in the randomQueue, play next in queue or random()
@@ -724,7 +770,7 @@ class App {
             var inQueue = randomIndex !== -1;
             var endOfQueue = randomIndex === randomQueueLength - 1;
 
-            if(inQueue && !endOfQueue)
+            if (inQueue && !endOfQueue)
                 return this.randomQueue[randomIndex + 1];
 
             return this.random();
@@ -743,7 +789,7 @@ class App {
 
             var looped = i < 0 || this.media.length <= i;
             var shouldLoop = this.settings.app.loopAtEnd;
-            if(looped && !shouldLoop){
+            if (looped && !shouldLoop) {
                 return undefined;
             }
 
@@ -756,7 +802,7 @@ class App {
             distance++;
 
             var validIndex = 0 <= i && i <= window.app.media.length - 1;
-            if(validIndex){
+            if (validIndex) {
                 if (this.media[i].canPlay())
                     return this.media[i];
             }

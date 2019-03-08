@@ -1,8 +1,12 @@
 class Media {
-    constructor(content, thumbnail) {
+    constructor(app, content, thumbnail) {
 
         this.playCount = 0;
-        this.index = window.app.media.length;
+        this.index = app.media.length;
+        this.count = {};
+        this.count.gif = 0;
+        this.count.picture = 0;
+        this.count.video = 0;
         this.randomIndex = -1; //used when random is turned on
 
         /*
@@ -36,7 +40,7 @@ class Media {
             case ".mp4":
             case ".gifv":
                 this.content = document.createElement("video");
-                this.content.preload = window.app.settings.video.include ? "auto" : "none";
+                this.content.preload = app.settings.video.include ? "auto" : "none";
                 this.content.controls = app.settings.video.controls;
                 break;
 
@@ -83,7 +87,7 @@ class Media {
          */
         this.content.addEventListener('ended', this.onEnd.bind(this));
         this.thumbnail.addEventListener('click', function(){
-            window.app.play(this);
+            app.play(this);
         }.bind(this));
         this.content.addEventListener('loadeddata', function(){
             var validX = this.vidX !== 0 && this.vidX !== undefined;
@@ -95,7 +99,7 @@ class Media {
                 this.vidY = this.content.clientHeight;
 
             //Make sure to set styles if they haven't been set yet
-            var isCurrentlyPlaying = window.app.currentlyPlaying === this;
+            var isCurrentlyPlaying = app.currentlyPlaying === this;
             this.content.style.display = isCurrentlyPlaying ? "initial" : "none";
             this.content.style.visibility = "initial";
             this.content.style.transform = "translate(0px, 0px)";
@@ -118,43 +122,43 @@ class Media {
         
         //Restart content according to settings
         if(this.isVideo()){
-            if(window.app.settings.video.restartOnSelect)
+            if(app.settings.video.restartOnSelect)
                 this.content.currentTime = 0;
         }else if(this.isGif()){
-            if(window.app.settings.gif.restartOnSelect)
+            if(app.settings.gif.restartOnSelect)
                 this.timer.cancel();
         }else if(this.isPicture()){
-            if(window.app.settings.picture.restartOnSelect)
+            if(app.settings.picture.restartOnSelect)
                 this.timer.cancel();
         }
             
-        if(window.app.settings.video.autoStart)
+        if(app.settings.video.autoStart)
             this.play();
     }
 
     deselect() {
         this.content.style.display = "none";
         this.thumbnail.children[0].style.border = "2px solid transparent";
-        this.thumbnail.children[0].style.opacity = window.app.settings.ui.gallery.thumbnailOpacity;
+        this.thumbnail.children[0].style.opacity = app.settings.ui.gallery.thumbnailOpacity;
         this.pause();
     }
 
     play(){ 
         if(this.content){
             if(this.isVideo()){
-                var videoSettings = window.app.settings.video;
+                var videoSettings = app.settings.video;
                 var volume = videoSettings.sound ? videoSettings.defaultVolume : 0;
                 this.content.volume = volume;
                 this.content.play();
             }else if(this.isGif()){
                 if(this.timer === undefined || this.timer.complete){
-                    this.timer = new Timer(this.onEnd.bind(this), window.app.settings.gif.duration);
+                    this.timer = new Timer(this.onEnd.bind(this), app.settings.gif.duration);
                 }else{
                     this.timer.resume();
                 }
             }else if (this.isPicture()){
                 if(this.timer === undefined || this.timer.complete){
-                    this.timer = new Timer(this.onEnd.bind(this), window.app.settings.gif.duration);
+                    this.timer = new Timer(this.onEnd.bind(this), app.settings.gif.duration);
                 }else{
                     this.timer.resume();
                 }
@@ -184,21 +188,21 @@ class Media {
         var endCase;
 
         if(this.isVideo()){
-            endCase = window.app.settings.video.onend
+            endCase = app.settings.video.onend
         }else if(this.isGif()){
-            endCase = window.app.settings.gif.onend
+            endCase = app.settings.gif.onend
         }else if(this.isPicture()){
-            endCase = window.app.settings.picture.onend
+            endCase = app.settings.picture.onend
         }
 
         switch(endCase){
             case 1:
                 //previous
-                window.app.playPrevious();
+                app.playPrevious();
                 break;
             case 2:
                 //thank you next
-                window.app.playNext();
+                app.playNext();
                 break;
             case 3:
                 //loop
@@ -206,8 +210,8 @@ class Media {
                 break;
             case 5:
                 //exit
-                window.app.play();
-                window.app.toggleApp(false);
+                app.play();
+                app.toggleApp(false);
                 break;
             default:
                 //do nothing
@@ -220,8 +224,8 @@ class Media {
         var vidX = this.vidX;
         var vidY = this.vidY;
 
-        var stageX = window.app.components.stage.clientWidth;
-        var stageY = window.app.components.stage.clientHeight;
+        var stageX = app.components.stage.clientWidth;
+        var stageY = app.components.stage.clientHeight;
 
         var multi = stageX/vidX;
         vidX *= multi;
@@ -278,14 +282,14 @@ class Media {
             case '.webm':
             case '.mp4':
             case '.gifv':
-                return window.app.settings.video.include
+                return app.settings.video.include
                 break;
             case '.jpg':
             case '.png':
-                return window.app.settings.picture .include
+                return app.settings.picture .include
                 break;
             case '.gif':
-                return window.app.settings.gif.include
+                return app.settings.gif.include
                 break;
             default:
                 return false;

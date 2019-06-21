@@ -6,7 +6,7 @@ Gallify is a browser extension that can turn any page you want into a robust and
 2. Locate the downloaded file and unzip it
 3. Open your Chrome Extensions tab by entering `chrome://extensions` in the URL bar
 4. Enable **developer mode**
-5. Click on **Load unpacked** in the top right
+5. Click on **Load unpacked extension** in the top right
 6. Locate the extracted folder   _(Step 2)_
 7. Open a [4chan board](http://www.4chan.org/) and enjoy!
 

@@ -2,7 +2,7 @@
 Gallify is a browser extension that can turn any supported page into a robust and easy to use gallery.
 
 ## Currently Supported
-> 4chan.org
+> [4chan](http://www.4chan.org/)
 
 ## How to install
 1. [Download](https://github.com/lauchlan105/gallify/archive/master.zip) this repository

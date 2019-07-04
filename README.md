@@ -1,5 +1,8 @@
 # Gallify
-Gallify is a browser extension that can turn any page you want into a robust and easy to use gallery.
+Gallify is a browser extension that can turn any supported page into a robust and easy to use gallery.
+
+##Currently Supported
+> 4chan.org
 
 ## How to install
 1. [Download](https://github.com/lauchlan105/gallify/archive/master.zip) this repository
